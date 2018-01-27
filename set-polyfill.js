@@ -58,32 +58,10 @@ function isSet(obj) {
     );
 }
 
-function difference(...items) {
-    const len = items.length;
-    const set = this;
-    assert(isObject(set), 'set is not an Object');
-
-    let k = 0;
-    const Ctr = SpeciesConstructor(set, originalSet);
-    const newSet = new Ctr(set);
-    const remover = newSet.delete;
-    assert(isCallable(remover), 'remover is not callable');
-
-    while (k < len) {
-        const iterable = items[k];
-        for (const value of iterable) {
-            Reflect.apply(remover, newSet, [value]);
-        }
-        k++;
-    }
-
-    return newSet;
-}
-
 function filter(predicate, thisArg = null) {
     assert(typeof predicate === 'function');
     assert(isSet(this));
-    const ret = new (getSpeciesConstructor(this));
+    const ret = new (SpeciesConstructor(this));
     for (const element of this) {
         if (Reflect.apply(predicate, thisArg, [element, element, this])) {
             ret.add(element);
@@ -95,7 +73,7 @@ function filter(predicate, thisArg = null) {
 function map(mapFunction, thisArg = null) {
     assert(typeof mapFunction === 'function');
     assert(isSet(this));
-    const ret = new (getSpeciesConstructor(this));
+    const ret = new (SpeciesConstructor(this));
     for (const element of this) {
         ret.add(Reflect.apply(mapFunction, thisArg, [element, element, this]))
     }
@@ -135,44 +113,7 @@ function every(predicate, thisArg = null) {
     return true;
 }
 
-function union(...items) {
-    const len = items.length;
-    const set = this;
-    assert(isObject(set), 'set is not an Object');
 
-    let k = 0;
-    const Ctr = SpeciesConstructor(set, originalSet);
-    const newSet = new Ctr(set);
-    const adder = newSet.add;
-    assert(isCallable(adder), 'adder is not callable');
-
-
-    while (k < len) {
-        const iterable = items[k];
-        for (const value of iterable) {
-            Reflect.apply(adder, newSet, [value]);
-        }
-        k++;
-    }
-
-    return newSet;
-}
-
-function intersect(...iterables) {
-    assert(isSet(this));
-    assert(iterables.length > 0);
-    const subConstructor = getSpeciesConstructor(this);
-    const ret = new subConstructor();
-    const setIterables = [this, ...iterables].map(iterable => new subConstructor(iterable));
-    for (const _set of setIterables) {
-        for (const element of _set) {
-            if (setIterables.every(_set=>_set.has(element))) {
-                ret.add(element);
-            }
-        }
-    }
-    return ret;
-}
 
 function addAll(...args) {
     assert(isSet(this));
@@ -204,13 +145,10 @@ const prototypeMethods = [
     ['map', map],
     ['filter', filter],
     ['some', some],
-    ['intersect', intersect],
     ['every', every],
     ['find', find],
-    ['difference', difference],
     ['addAll', addAll],
     ['deleteAll', deleteAll],
-    ['union', union]
 ];
 const staticMethods = [
     ['isSet', isSet]

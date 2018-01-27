@@ -1,0 +1,17 @@
+<emu-note type="editor">
+    This code serves as placeholder until formal spec is written for this method.
+</emu-note>
+
+<pre><code class="javascript">
+function keyBy(iterable, keyDerivative) {
+    assert(isObject(this), 'this is not an object');
+    assert(isCallable(this), 'this is not a function');
+    assert(Map === this || Map.isPrototypeOf(this), 'this is not a Map constructor');
+    const retObj = new this();
+    for(const element of iterable) {
+        const derivedKey = Reflect.apply(keyDerivative, null, [element]);
+        retObj.set(derivedKey, value);
+    }
+    return retObj;
+}
+</code></pre>

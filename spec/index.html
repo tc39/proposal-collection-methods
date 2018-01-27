@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
 <pre class="metadata">
-title: New Set methods
-location: https://ginden.github.io/set-methods/
-repository: https://github.com/ginden/set-methods/
-contributors: Michał Wadas
+title: New collections methods
+location: https://ginden.github.io/collection-methods/
+repository: https://github.com/ginden/collection-methods/
+contributors: Michał Wadas, Ecma International
 </pre>
 <script src="ecmarkup.js" defer></script>
 <link rel="stylesheet" href="ecmarkup.css">
@@ -13,10 +13,10 @@ contributors: Michał Wadas
 <emu-clause id="formalities">
     <h1>Formal informations</h1>
    <ul>
-       <li>title: New Set methods</li>
-       <li>location: <a href="https://ginden.github.io/set-methods/">https://ginden.github.io/set-methods/</a></li>
-       <li>repository: <a href="https://github.com/ginden/set-methods/">https://github.com/Ginden/set-methods/</a></li>
-       <li>contributors: Michał Wadas, Sathya Gunasekaran</li>
+       <li>title: New collections methods</li>
+       <li>location: <a href="https://ginden.github.io/collection-methods/">https://ginden.github.io/collection-methods/</a></li>
+       <li>repository: <a href="https://github.com/ginden/collection-methods/">https://github.com/Ginden/collection-methods/</a></li>
+       <li>contributors: Michał Wadas, Ecma International</li>
    </ul>
 </emu-clause>
 
@@ -65,22 +65,33 @@ contributors: Michał Wadas
     <emu-import href="./set-prototype-remove-elements.html"></emu-import>
 </emu-clause>
 
-<emu-clause id="Set.prototype.union">
-    <h1>Set.prototype.union(_iterable_)</h1>
-    <emu-import href="./set-prototype-union.html"></emu-import>
+<emu-clause id="Map.prototype.mapValues">
+    <h1>Map.prototype.mapValues( _callbackfn_, [ _thisArg_ ] )</h1>
+    <emu-import href="./map-prototype-map-values.html"></emu-import>
 </emu-clause>
 
-<emu-clause id="Set.prototype.intersect">
-    <h1>Set.prototype.intersect(_iterable_)</h1>
-    <emu-import href="./set-prototype-intersect.html"></emu-import>
+<emu-clause id="Map.prototype.mapKeys">
+    <h1>Map.prototype.mapKeys( _callbackfn_, [ _thisArg_ ] )</h1>
+    <emu-import href="./map-prototype-map-keys.html"></emu-import>
 </emu-clause>
 
-<emu-clause id="Set.prototype.difference">
-    <h1>Set.prototype.difference(_iterable_)</h1>
-    <emu-import href="./set-prototype-difference.html"></emu-import>
+<emu-clause id="Map.prototype.filter">
+    <h1>Map.prototype.filter( _callbackfn_, [ _thisArg_ ] )</h1>
+    <emu-import href="./map-prototype-filter.html"></emu-import>
 </emu-clause>
 
-<emu-clause id="Set.prototype.symmetricDifference">
-    <h1>Set.prototype.symmetricDifference(_iterable_)</h1>
-    <emu-import href="./set-prototype-symmetric-difference.html"></emu-import>
+<emu-clause id="Map.prototype.merge">
+    <h1>Map.prototype.merge( _callbackfn_, [ _thisArg_ ] )</h1>
+    <emu-import href="./map-prototype-merge.html"></emu-import>
+</emu-clause>
+
+
+<emu-clause id="Map.keyBy">
+    <h1>Map.keyBy( _iterable_, _callbackfn_)</h1>
+    <emu-import href="./map-key-by.html"></emu-import>
+</emu-clause>
+
+<emu-clause id="Map.groupBy">
+    <h1>Map.groupBy( _iterable_, _callbackfn_)</h1>
+    <emu-import href="./map-group-by.html"></emu-import>
 </emu-clause>

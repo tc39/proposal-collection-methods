@@ -1,0 +1,18 @@
+<emu-note type="editor">
+    This code serves as placeholder until formal spec is written for this method.
+</emu-note>
+
+<pre><code class="javascript">
+function mapValues(callbackFn, thisArg) {
+    assert(isObject(this), 'this is not an object');
+    assert(isCallable(callbackFn), 'callback is not a function');
+    const Ctor = SpeciesConstructor(this, Map);
+    const retObj = new Ctor();
+    const _set = retObj.set;
+    for(const [key, value] of this) {
+        const newValue = Reflect.apply(callbackFn, thisArg, [value, key, this])
+        Reflect.apply(_set, retObj, [key, newValue]);
+    }
+    return retObj;
+}
+</code></pre>
