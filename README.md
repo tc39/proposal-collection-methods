@@ -1,6 +1,6 @@
-# New Set methods
+# New collections (Set and Map) methods
 
-See [formal spec WIP](https://ginden.github.io/set-methods/).
+See [formal spec WIP](https://ginden.github.io/collection-methods/).
 
 # (Semi)relevant previous discussions
 
@@ -69,6 +69,11 @@ New methods are added to `Map.prototype`.
 
 * New methods:
   * `Map.prototype.merge(iterable)` - performs in-place update joining two maps.
+  
+New methods are added to `%Map%`.
+
+* `Map.groupBy` - 
+* `Map.keyBy` - 
 
 ## Not included in this proposal but worth considering
 
