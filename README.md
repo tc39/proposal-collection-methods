@@ -1,6 +1,6 @@
 # New collections (Set and Map) methods
 
-See [formal spec WIP](https://ginden.github.io/collection-methods/).
+See [formal spec WIP](https://tc39.github.io/proposal-collection-methods/).
 
 # (Semi)relevant previous discussions
 
