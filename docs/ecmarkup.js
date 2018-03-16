@@ -197,7 +197,7 @@ Search.prototype.displayResults = function (results) {
       }
 
       if (text) {
-        html += '<li class=menu-search-result-' + cssClass + '><a href="#' + id + '">' + text + '</a></li>'
+        html += `<li class="menu-search-result-${cssClass}"><a href="#${id}">${text}</a></li>`
       }
     });
 
@@ -300,7 +300,7 @@ Menu.prototype.revealInToc = function (path) {
   while (index < path.length) {
     var children = current.children;
     for (var i = 0; i < children.length; i++) {
-      if ('#' + path[index].id === children[i].children[1].getAttribute('href') ) {
+      if (`#${path[index].id}` === children[i].children[1].getAttribute('href') ) {
         children[i].classList.add('revealed');
         if (index === path.length - 1) {
           children[i].classList.add('revealed-leaf');
@@ -407,9 +407,9 @@ Menu.prototype.addPinEntry = function (id) {
     } else {
       prefix = '';
     }
-    this.$pinList.innerHTML += '<li><a href="#' + entry.id + '">' + prefix + entry.titleHTML + '</a></li>';
+    this.$pinList.innerHTML += `<li><a href="#${entry.id}">${prefix}${entry.titleHTML}</a></li>`;
   } else {
-    this.$pinList.innerHTML += '<li><a href="#' + entry.id + '">' + entry.key + '</a></li>';
+    this.$pinList.innerHTML += `<li><a href="#${entry.id}">${entry.key}</a></li>`;
   }
 
   if (Object.keys(this._pinnedIds).length === 0) {
@@ -420,7 +420,7 @@ Menu.prototype.addPinEntry = function (id) {
 }
 
 Menu.prototype.removePinEntry = function (id) {
-  var item = this.$pinList.querySelector('a[href="#' + id + '"]').parentNode;
+  var item = this.$pinList.querySelector(`a[href="#${id}"]`).parentNode;
   this.$pinList.removeChild(item);
   delete this._pinnedIds[id];
   if (Object.keys(this._pinnedIds).length === 0) {
