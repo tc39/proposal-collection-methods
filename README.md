@@ -42,7 +42,7 @@ See [formal spec WIP](https://tc39.github.io/proposal-collection-methods/).
 
 # Proposal
 
-This proposal does not change grammar of language. 
+This proposal does not change grammar of language.
 
 New methods are added to `Set.prototype`.
 
@@ -74,6 +74,12 @@ New methods are added to `%Map%`.
 
 * `Map.groupBy` - 
 * `Map.keyBy` - 
+
+New methods are added to `WeakSet.prototype`.
+
+* Added for symmetry with `Set`:
+  * `WeakSet.prototype.addAll(...elements)`
+  * `WeakSet.prototype.deleteAll(...elements)`
 
 ## Not included in this proposal but worth considering
 
