@@ -79,7 +79,7 @@ New methods are added to `%Map%`.
 
 * `Set.prototype.isSubsetOf(otherSet)`
 * `Set.prototype.isSupersetOf(iterable)`
-* `Set.prototype.flatMap`, `Set.prototype.flatten` - should be added if [`Array.prototype.flatMap`](https://github.com/tc39/proposal-flatMap) is added to language
+* `Set.prototype.flatMap`, `Set.prototype.flat` - should be added if [`Array.prototype.flatMap`](https://github.com/tc39/proposal-flatMap) is added to language
 
 # Why not `%IteratorPrototype%` methods
 
