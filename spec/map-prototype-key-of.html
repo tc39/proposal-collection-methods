@@ -1,0 +1,15 @@
+<p>When the `keyOf` method is called, the following steps are taken:</p>
+
+
+<emu-alg>
+    1. Let _map_ be the *this* value.
+        1. If Type(_map_) is not Object, throw a *TypeError* exception.
+        2. If _map_ does not have a [[MapData]] internal slot, throw a *TypeError* exception.
+    2. Let _entries_ be the List that is _map_.[[MapData]].
+    3. For each Record { [[Key]], [[Value]] } _e_ that is an element of _entries_, in original key insertion order, do:
+        1. If _e_.[[Key]] is not `empty`, then
+            1. Let _same_ be the result of performing Strict Equality Comparison _searchElement_ === _e_.[[Value]].
+            2. If _same_ is *true*, then return _e_.[[Key]].
+    4. Return *undefined*.
+
+</emu-alg>
