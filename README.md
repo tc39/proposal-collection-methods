@@ -66,6 +66,7 @@ New methods are added to `Map.prototype`.
   * `Map.prototype.filter(predicate, thisArg)`
   * `Map.prototype.mapValues(fn, thisArg)`
   * `Map.prototype.mapKeys(fn, thisArg)`
+  * `Map.prototype.reduce(fn, initialValue)`
   * `Map.prototype.some(predicate, thisArg)`
   * `Map.prototype.every(predicate, thisArg)`
   * `Map.prototype.includes(searchElement)`
