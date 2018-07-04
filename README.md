@@ -68,6 +68,7 @@ New methods are added to `Map.prototype`.
   * `Map.prototype.mapKeys(fn, thisArg)`
   * `Map.prototype.some(predicate, thisArg)`
   * `Map.prototype.every(predicate, thisArg)`
+  * `Map.prototype.includes(searchElement)`
 
 * New methods:
   * `Map.prototype.merge(iterable)` - performs in-place update joining two maps.
