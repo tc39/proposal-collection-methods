@@ -72,6 +72,7 @@ New methods are added to `Map.prototype`.
   * `Map.prototype.includes(searchElement)`
 
 * New methods:
+  * `Map.prototype.deleteAll(...elements)` - similar to `Set.prototype.deleteAll`.
   * `Map.prototype.merge(iterable)` - performs in-place update joining two maps.
   
 New methods are added to `%Map%`.
@@ -81,9 +82,14 @@ New methods are added to `%Map%`.
 
 New methods are added to `WeakSet.prototype`.
 
-* Added for symmetry with `Set`:
-  * `WeakSet.prototype.addAll(...elements)`
-  * `WeakSet.prototype.deleteAll(...elements)`
+* New methods:
+  * `WeakSet.prototype.addAll(...elements)` - similar to `Set.prototype.addAll`.
+  * `WeakSet.prototype.deleteAll(...elements)` - similar to `Set.prototype.deleteAll`.
+
+New methods are added to `WeakMap.prototype`.
+
+* New methods:
+  * `WeakMap.prototype.deleteAll(...elements)` - similar to `Map.prototype.deleteAll`.
 
 ## Not included in this proposal but worth considering
 
