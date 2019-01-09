@@ -76,12 +76,12 @@ New methods are added to `Map.prototype`.
 
 * New methods:
   * `Map.prototype.deleteAll(...elements)` - similar to `Set.prototype.deleteAll`.
-  * `Map.prototype.merge(iterable)` - performs in-place update joining two maps.
+  * `Map.prototype.merge(...iterables)` - performs in-place update joining arbitrary number of iterables.
   
 New methods are added to `%Map%`.
 
-* `Map.groupBy` - 
-* `Map.keyBy` - 
+* `Map.groupBy(iterable, keyDerivative)` -
+* `Map.keyBy(iterable, keyDerivative)` - 
 
 New methods are added to `WeakSet.prototype`.
 
@@ -96,8 +96,6 @@ New methods are added to `WeakMap.prototype`.
 
 ## Not included in this proposal but worth considering
 
-* `Set.prototype.isSubsetOf(otherSet)`
-* `Set.prototype.isSupersetOf(iterable)`
 * `Set.prototype.flatMap`, `Set.prototype.flat` - should be added if [`Array.prototype.flatMap`](https://github.com/tc39/proposal-flatMap) is added to language
 
 # Why not `%IteratorPrototype%` methods

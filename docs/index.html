@@ -222,7 +222,22 @@
 
 <emu-clause id="Map.prototype.merge">
     <h1><span class="secnum">21</span>Map.prototype.merge( <var>callbackfn</var>, [ <var>thisArg</var> ] )</h1>
-    <emu-import href="./map/prototype-merge.html">TBA</emu-import>
+    <emu-import href="./map/prototype-merge.html"><emu-note type="editor"><span class="note">Editor's Note</span><div class="note-contents">
+    This code serves as placeholder until formal spec is written for this method.
+
+</div></emu-note>
+
+<pre><code class="javascript hljs"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">merge</span>(<span class="hljs-params">...iterables</span>) </span>{
+    assert(isObject(<span class="hljs-keyword">this</span>), <span class="hljs-string">'this is not an object'</span>);
+    assert(<span class="hljs-keyword">this</span> <span class="hljs-keyword">instanceof</span> <span class="hljs-built_in">Map</span>, <span class="hljs-string">'this is not a Map instance'</span>);
+    <span class="hljs-keyword">for</span>(<span class="hljs-keyword">const</span> iterable <span class="hljs-keyword">of</span> iterables) {
+        <span class="hljs-keyword">for</span>(<span class="hljs-keyword">const</span> [key, value] <span class="hljs-keyword">of</span> iterable) {
+            <span class="hljs-keyword">this</span>.set(key, value);
+        }
+    }
+
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>;
+}</code></pre></emu-import>
 </emu-clause>
 
 <emu-clause id="Map.prototype.deleteAll">

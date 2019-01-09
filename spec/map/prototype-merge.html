@@ -1,1 +1,17 @@
-TBA
+<emu-note type="editor">
+    This code serves as placeholder until formal spec is written for this method.
+</emu-note>
+
+<pre><code class="javascript">
+function merge(...iterables) {
+    assert(isObject(this), 'this is not an object');
+    assert(this instanceof Map, 'this is not a Map instance');
+    for(const iterable of iterables) {
+        for(const [key, value] of iterable) {
+            this.set(key, value);
+        }
+    }
+
+    return this;
+}
+</code></pre>
