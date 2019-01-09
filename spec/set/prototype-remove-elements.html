@@ -8,12 +8,12 @@
     4. Let _k_ be 0.
     5. Let _remover_ be ? Get(_set_, "delete")
     6. If IsCallable(_remover_) is *false*, throw a *TypeError* exception.
+    7. Let _allDeleted_ be *true*.
     7. Repeat while _k_ < _len_
         1. Let _value_ be _items_[_k_].
-        2. Call(_remover_, _set_, _value_)
-        3. Increase _k_ by 1.
-    8. Return _set_.
+        2. Let _wasDeleted_ be Call(_remover_, _set_, _value_)
+        3. Set `allDeleted` to be `allDeleted` && `wasDeleted`
+        4. Increase _k_ by 1.
+    8. Return ToBoolean(`allDeleted`);
 
 </emu-alg>
-
-<p>The `length` property of the `deleteAll` method is *0*.</p>
