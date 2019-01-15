@@ -94,6 +94,13 @@ New methods are added to `WeakMap.prototype`.
 * New methods:
   * `WeakMap.prototype.deleteAll(...elements)` - similar to `Map.prototype.deleteAll`.
 
+## Polyfill
+
+* [core-js/packages/core-js/features/set](https://github.com/zloirock/core-js/tree/master/packages/core-js/features/set)
+* [core-js/packages/core-js/features/map](https://github.com/zloirock/core-js/tree/master/packages/core-js/features/map)
+* [core-js/packages/core-js/features/weak-set](https://github.com/zloirock/core-js/tree/master/packages/core-js/features/weak-set)
+* [core-js/packages/core-js/features/weak-map](https://github.com/zloirock/core-js/tree/master/packages/core-js/features/weak-map)
+
 ## Not included in this proposal but worth considering
 
 * `Set.prototype.flatMap`, `Set.prototype.flat` - should be added if [`Array.prototype.flatMap`](https://github.com/tc39/proposal-flatMap) is added to language
