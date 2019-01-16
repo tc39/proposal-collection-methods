@@ -96,7 +96,7 @@ New methods are added to `WeakMap.prototype`.
 
 ## Polyfill
 
-The polyfill is available in the [core-js](https://github.com/zloirock/core-js) library.
+A polyfill is available in the [core-js](https://github.com/zloirock/core-js) library.
 You can find it in the [ECMAScript proposal section](https://github.com/zloirock/core-js#ecmascript-proposals) 
 / **Stage 1 proposals** / **New Set and Map methods proposal**.
 
