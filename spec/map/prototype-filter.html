@@ -2,18 +2,25 @@
     This code serves as placeholder until formal spec is written for this method.
 </emu-note>
 
-<pre><code class="javascript">
-function filter(callbackFn, thisArg) {
-    assert(isObject(this), 'this is not an object');
-    assert(isCallable(callbackFn), 'callback is not a function');
-    const Ctor = SpeciesConstructor(this, Map);
-    const retObj = new Ctor();
-    const _set = retObj.set;
-    for(const [key, value] of this) {
-        if (Reflect.apply(callbackFn, thisArg, [value, key, this])) {
-            Reflect.apply(_set, retObj, [key, value]);
-        }
-    }
-    return retObj;
-}
-</code></pre>
+<emu-alg>
+    1. Let _map_ be the *this* value.
+        1. If Type(_map_) is not Object, throw a *TypeError* exception.
+        2. If _map_ does not have a ~[[MapData]]~ internal slot, throw a *TypeError* exception.
+    3. If IsCallable(_callbackfn_) is false, throw a *TypeError* exception.
+    4. If _thisArg_ was supplied, let _T_ be _thisArg_; else let _T_ be *undefined*.
+    5. Let _Ctr_ be ? SpeciesConstructor(_map_, %Map%)
+    6. Let _newMap_ be ? Construct(_Ctr_)
+    7. Let _adder_ be ? Get(_newSet_, "set")
+        1. If IsCallable(_adder_) is *false*, throw a TypeError.
+    8. Let _entries_ be the List that is _map_.[[MapData]]
+    9. Let _newMapData_ be new empty List.
+    9. For each Record { [[Key]], [[Value]] } _p_ that is an element of entries, do
+        1. If _p_.[[Key]] is not empty, then
+            1. Let _key_ be _p_.[[Key]]
+            2. Let _value_ be _p_.[[Value]]
+            3. Let _selected_ be ToBoolean(? Call(_callbackfn_, _T_, « _value_, _key_, _map_ »))
+            4. If _selected_ is *true*, then
+                1. Let _pair_ be CreateArrayFromList(« _value_, _key_ »)
+                1. Append _pair_ as last element to _newMapData_.
+    10. Return ? AddEntriesFromIterable(_map_, CreateArrayFromList(_newMapData_), _adder_).
+</emu-alg>
