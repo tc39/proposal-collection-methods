@@ -1,21 +1,40 @@
-<emu-note type="editor">
-    This code serves as placeholder until formal spec is written for this method.
-</emu-note>
+<p>When the `groupBy` method is called, the following steps are taken:</p>
 
-<pre><code class="javascript">
-function groupBy(iterable, keyDerivative) {
-    assert(isObject(this), 'this is not an object');
-    assert(isCallable(this), 'this is not a function');
-    assert(Map === this || Map.isPrototypeOf(this), 'this is not a Map constructor');
-    const retObj = new this();
-    for(const element of iterable) {
-        const derivedKey = Reflect.apply(keyDerivative, null, [element]);
-        if (!retObj.has(derivedKey)) {
-            retObj.set(derivedKey, []);
-        }
-        const arr = retObj.get(derivedKey);
-        arr.push(element);
-    }
-    return retObj;
-}
-</code></pre>
+<emu-alg>
+    1. Let _C_ be the *this* value.
+    2. If IsCallable(_keyDerivative_) is *false*, throw a *TypeError* exception.
+    3. Let iteratorRecord be ? GetIterator(iterable).
+    4. Let _internalList_ be new empty List.
+    5. Let _next_ be guard value.
+    6. If IsConstructor(_C_) is *true*
+        1. Let _map_ be ? Construct(C)
+    7. Else,
+        1. Let _map_ be ? Construct(%Map%)
+    8. If _map_ does not have a [[MapData]] internal slot, throw a *TypeError* exception.
+    9. Repeat while _next_ is not *false*,
+        1. Set _next_ be ? IteratorStep(iteratorRecord).
+        2. If _next_ is not false,
+            1. Let _item_ be ? IteratorValue(next);
+            2. Let _key_ be Call(_keyDerivative_, null, « item »)
+            3. If _key_ is an abrupt completion, return ? IteratorClose(_iteratorRecord_, _key_).
+            4. Let _entryWasFound_ be *false*
+            5. For each Record { [[Key, [[Value]] } _p_ that is an element of _internalList_, do
+                1. If _p_.[[Key]] is not empty and SameValueZero(_p_.[[Key]], _key_) is *true*, then
+                    1. Let _grouped_ be _p_.[[Value]]
+                    2. Append _item_ as last element of _grouped_.
+                    3. Let _entryWasFound_ be *true*.
+            6. If _entryWasFound_ is *false*
+                1. Let _groupedList_ be « _item_ ».
+                2. Let _record_ be the Record { [[Key]]: _key_, [[Value]]: _groupedList_ }
+                3. Append _record_ as last element of _internalList_.
+    10. Let _intermediateList_ be new empty List.
+    11. For each _record_ in _internalList_,
+        1. Let _arr_ be CreateArrayFromList(_record_.[[Value]]).
+        2. Let _pair_ be CreateArrayFromList(« _record_.[[Key]], _arr_ »)
+        3. Append _pair_ as last element of _intermediateList_.
+    13. _newMapData_ be CreateArrayFromList(_intermediateList_)
+    12. Let _adder_ be ? Get(_map_, "set")
+    12. Return ? AddEntriesFromIterable(_map_, _newMapData_, _adder_).
+
+
+</emu-alg>
