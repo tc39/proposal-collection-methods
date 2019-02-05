@@ -77,6 +77,7 @@ New methods are added to `Map.prototype`.
 * New methods:
   * `Map.prototype.deleteAll(...elements)` - similar to `Set.prototype.deleteAll`.
   * `Map.prototype.merge(...iterables)` - performs in-place update joining arbitrary number of iterables.
+  * `Map.prototype.update(key, cb [,thunk])` - performs in-place update of single value. 
   
 New methods are added to `%Map%`.
 
