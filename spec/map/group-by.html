@@ -9,8 +9,8 @@
     6. If IsConstructor(_C_) is *true*
         1. Let _map_ be ? Construct(C)
     7. Else,
-        1. Let _map_ be ? Construct(%Map%)
-    8. If _map_ does not have a [[MapData]] internal slot, throw a *TypeError* exception.
+        1. Throw a *TypeError*.
+    8. If _map_ does not have a ~[[MapData]]~ internal slot, throw a *TypeError* exception.
     9. Repeat while _next_ is not *false*,
         1. Set _next_ be ? IteratorStep(iteratorRecord).
         2. If _next_ is not false,

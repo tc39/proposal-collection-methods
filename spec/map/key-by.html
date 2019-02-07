@@ -5,9 +5,9 @@
     1. Let _C_ be the *this* value.
     2. If IsConstructor(_C_) is *true*
         1. Let _map_ be ? Construct(_C_)
-    3. Else,
-        1. Let _map_ be Construct(%Map%)
-    4. If _map_ does not have a [[MapData]] internal slot, throw a *TypeError* exception.
+    7. Else,
+        1. Throw a *TypeError*.
+    4. If _map_ does not have a ~[[MapData]]~ internal slot, throw a *TypeError* exception.
     5. If IsCallable(_callbackfn_) is false, throw a *TypeError* exception.
     6. Let _set_ be ? Get(_map_, "set")
     7. Let _iteratorRecord_ be ? GetIterator(_iterable_).

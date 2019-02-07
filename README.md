@@ -73,6 +73,7 @@ New methods are added to `Map.prototype`.
   * `Map.prototype.some(predicate, thisArg)`
   * `Map.prototype.every(predicate, thisArg)`
   * `Map.prototype.includes(searchElement)`
+  * `Map.prototype.update(key, callbackfn, thunk)`
 
 * New methods:
   * `Map.prototype.deleteAll(...elements)` - similar to `Set.prototype.deleteAll`.
@@ -106,3 +107,6 @@ New methods are added to `WeakMap.prototype`.
     * Even small codebase can have hundreds occurrences of this pattern - and hundreds places to make a mistake.
 * User code have no easy way to inherit from `%IteratorPrototype%`
 
+# Rationales
+
+See [rationales.md](./rationales.md) for details.

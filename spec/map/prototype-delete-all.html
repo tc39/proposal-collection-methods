@@ -5,6 +5,8 @@
     2. Let _items_ be the List of arguments passed to this function.
     3. Let _map_ be the *this* value.
         1. If Type(_map_) is not Object, throw a *TypeError* exception.
+        2. If _map_ does not have a ~[[MapData]]~ internal slot, throw a *TypeError* exception.
+
     4. Let _k_ be 0.
     5. Let _remover_ be ? Get(_map_, "delete")
     6. If IsCallable(_remover_) is *false*, throw a *TypeError* exception.
