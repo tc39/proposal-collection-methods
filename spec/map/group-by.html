@@ -2,7 +2,7 @@
 
 <emu-alg>
     1. Let _C_ be the *this* value.
-    2. If IsCallable(_keyDerivative_) is *false*, throw a *TypeError* exception.
+    2. If IsCallable(_callbackfn_) is *false*, throw a *TypeError* exception.
     3. Let iteratorRecord be ? GetIterator(iterable).
     4. Let _internalList_ be new empty List.
     5. Let _next_ be guard value.
@@ -15,7 +15,7 @@
         1. Set _next_ be ? IteratorStep(iteratorRecord).
         2. If _next_ is not false,
             1. Let _item_ be ? IteratorValue(next);
-            2. Let _key_ be Call(_keyDerivative_, null, « item »)
+            2. Let _key_ be Call(_callbackfn_, null, « item »)
             3. If _key_ is an abrupt completion, return ? IteratorClose(_iteratorRecord_, _key_).
             4. Let _entryWasFound_ be *false*
             5. For each Record { [[Key, [[Value]] } _p_ that is an element of _internalList_, do
