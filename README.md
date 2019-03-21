@@ -96,6 +96,30 @@ New methods are added to `WeakMap.prototype`.
 * New methods:
   * `WeakMap.prototype.deleteAll(...elements)` - similar to `Map.prototype.deleteAll`.
 
+## Polyfill
+
+A polyfill is available in the [core-js](https://github.com/zloirock/core-js) library.
+You can find it in the [ECMAScript proposal section](https://github.com/zloirock/core-js#ecmascript-proposals) 
+/ **Stage 1 proposals** / **New Set and Map methods proposal**.
+
+For all new collection methods include this at the top of your entry point.
+```js
+require('core-js/proposals/collection-methods');
+
+const colors = new Map([['red', '#FF0000'], ['gold', '#FFD700']]);
+colors
+  .mapKeys((value, key) => key.toUpperCase()) // Map { 'RED' => '#FF0000', 'GOLD' => '#FFD700' }
+  .mapValues(value => value.toLowerCase()); // Map { 'RED' => '#ff0000', 'GOLD' => '#ffd700' }
+```
+For a specific method include the needed polyfill directly.
+```js
+require('core-js/features/set/join');
+
+const mySet = new Set(['Just', 'like', 'an', 'array']);
+mySet.join(' '); // Just like an array
+```
+
+
 ## Not included in this proposal but worth considering
 
 * `Set.prototype.flatMap`, `Set.prototype.flat` - should be added if [`Array.prototype.flatMap`](https://github.com/tc39/proposal-flatMap) is added to language
