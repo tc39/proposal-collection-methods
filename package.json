@@ -9,7 +9,7 @@
     "test": "mocha -r ./set-polyfill.js -r ./map-polyfill.js test/*/*.spec.js"
   },
   "devDependencies": {
-    "ecmarkup": "^3.11.2"
+    "ecmarkup": "^3.23.0"
   },
   "version": "1.0.0",
   "repository": {
@@ -23,7 +23,7 @@
   },
   "homepage": "https://github.com/Ginden/set-methods#readme",
   "dependencies": {
-    "chai": "^4.1.0",
+    "chai": "^4.2.0",
     "mocha": "^5.2.0"
   }
 }
