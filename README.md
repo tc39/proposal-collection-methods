@@ -1,5 +1,7 @@
 # New collections (Set and Map) methods
 
+![Stage 1](https://badges.aleen42.com/src/tc39_2.svg)
+
 See [formal spec WIP](https://tc39.github.io/proposal-collection-methods/).
 
 # (Semi)relevant previous discussions
