@@ -8,9 +8,6 @@
     "watch": "ecmarkup --watch spec/index.html out/index.html --js out/ecmarkup.js --css out/ecmarkup.css",
     "test": "mocha -r ./set-polyfill.js -r ./map-polyfill.js test/*/*.spec.js"
   },
-  "devDependencies": {
-    "ecmarkup": "^3.23.0"
-  },
   "version": "1.0.0",
   "repository": {
     "type": "git",
@@ -25,5 +22,8 @@
   "dependencies": {
     "chai": "^4.2.0",
     "mocha": "^5.2.0"
+  },
+  "devDependencies": {
+    "ecmarkup": "^9.6.3"
   }
 }
