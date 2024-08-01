@@ -136,19 +136,8 @@
         <emu-clause id="Map.prototype.mapKeys">
             <h1><span class="secnum">3.2</span> Map.prototype.mapKeys( <var>callbackfn</var>, [ <var>thisArg</var> ] )</h1>
             <emu-import href="./map/prototype-map-keys.html"><emu-note type="editor"><span class="note">Editor's Note</span><div class="note-contents">
-  This code serves as placeholder until formal spec is written for this method.
-</div></emu-note><pre><code class="javascript hljs"><span class="hljs-keyword">function</span> <span class="hljs-title function_">mapKeys</span>(<span class="hljs-params">callbackFn, thisArg</span>) {
-    <span class="hljs-title function_">assert</span>(<span class="hljs-title function_">isObject</span>(<span class="hljs-variable language_">this</span>), <span class="hljs-string">'this is not an object'</span>);
-    <span class="hljs-title function_">assert</span>(<span class="hljs-title function_">isCallable</span>(callbackFn), <span class="hljs-string">'callback is not a function'</span>);
-    <span class="hljs-keyword">const</span> <span class="hljs-title class_">Ctor</span> = <span class="hljs-title class_">SpeciesConstructor</span>(<span class="hljs-variable language_">this</span>, <span class="hljs-title class_">Map</span>);
-    <span class="hljs-keyword">const</span> retObj = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Ctor</span>();
-    <span class="hljs-keyword">const</span> _set = retObj.<span class="hljs-property">set</span>;
-    <span class="hljs-keyword">for</span>(<span class="hljs-keyword">const</span> [key, value] <span class="hljs-keyword">of</span> <span class="hljs-variable language_">this</span>) {
-        <span class="hljs-keyword">const</span> newKey = <span class="hljs-title class_">Reflect</span>.<span class="hljs-title function_">apply</span>(callbackFn, thisArg, [value, key, <span class="hljs-variable language_">this</span>])
-        <span class="hljs-title class_">Reflect</span>.<span class="hljs-title function_">apply</span>(_set, retObj, [newKey, value]);
-    }
-    <span class="hljs-keyword">return</span> retObj;
-}</code></pre></emu-import>
+  TODO: how to handle duplicate keys? Obvious way is to use <code>Map.prototype.set</code> through <code>Map</code> constructor, but that would break convention set by <code>Map.groupBy</code>.
+</div></emu-note><emu-alg><ol><li>Let <var>M</var> be the <emu-val>this</emu-val> value.</li><li>Perform ?&nbsp;RequireInternalSlot(<var>M</var>, <var class="field">[[MapData]]</var>).</li><li>If IsCallable(<var>callbackfn</var>) is **false*<emu-val>, throw a *TypeError</emu-val> exception.</li><li>Let <var>result</var> be !&nbsp;Construct(%Map%).</li><li>Let <var>resultKeys</var> be a new empty List.</li><li>For each Record { <var class="field">[[Key]]</var>, <var class="field">[[Value]]</var>&nbsp;} <var>e</var> of <var>M</var>.<var class="field">[[MapData]]</var>, do<ol><li>If <var>e</var>.<var class="field">[[Key]]</var> is not <emu-const>empty</emu-const>, then<ol><li>Let <var>newKey</var> be CanonicalizeKeyedCollectionKey(? Call(<var>callbackfn</var>, <var>T</var>, « <var>e</var>.<var class="field">[[Value]]</var>, <var>e</var>.<var class="field">[[Key]]</var>, <var>map</var>&nbsp;»))</li><li>Let <var>p</var> be the Record { <var class="field">[[Key]]</var>: <var>newKey</var>, <var class="field">[[Value]]</var>: <var>e</var>.<var class="field">[[Value]]</var>&nbsp;}</li><li>If <var>newKey</var> is present in <var>resultKeys</var>, throw **RangeError**</li><li>Append <var>p</var> to <var>result</var>.<var class="field">[[MapData]]</var></li><li>Append <var>newKey</var> to <var>resultKeys</var></li></ol></li></ol></li><li>Return <var>result</var>.</li></ol></emu-alg></emu-import>
         </emu-clause>
 
         <emu-clause id="Map.prototype.filter">
