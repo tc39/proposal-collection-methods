@@ -2,16 +2,17 @@
 <p>When the `find` method is called, the following steps are taken:</p>
 
 <emu-alg>
-  1. Let _set_ be the *this* value.
-    1. If Type(_set_) is not Object, throw a *TypeError* exception.
-    1. If _set_ does not have a [[SetData]] internal slot, throw a *TypeError* exception.
-  1. If IsCallable(_callbackfn_) is false, throw a *TypeError* exception.
-  1. If _thisArg_ was supplied, let _T_ be _thisArg_; else let _T_ be *undefined*.
-  1. Let _entries_ be the List that is _set_.[[SetData]]
-  1. For each _ele_ that is an element of _entries_, in original insertion order, do:
-    1. If _ele_ is not `empty`, then
-      1. Let _testResult_ be ToBoolean(? Call(_callbackfn_, _T_, « _ele_, _ele_, _set_ »))
-      1. If _testResult_ is *true*, then return _ele_
+  1. Let _O_ be the *this* value.
+  1. Perform ? RequireInternalSlot(_thisArg_, [[SetData]]).
+  1. If IsCallable(_predicate_) is false, throw a *TypeError* exception.
+  1. Let _entries_ be _thisArg_.[[SetData]]
+  1. Let _thisSize_ be the number of elements in _thisArg_.[[SetData]].
+  1. Let _index_ be 0.
+  1. Repeat, while _index_ &lt; _thisSize_,
+    1. Let _e_ be _O_.[[SetData]][_index_].
+    1. Set _index_ to _index_ + 1.
+    1. If _e_ is not ~empty~, then
+      1. Let _testResult_ be ToBoolean(? Call(_predicate_, _thisArg_, « _e_, _e_, _O_ »))
+      1. If _testResult_ is *true*, then return _e_
   1. Return *undefined*.
-
 </emu-alg>

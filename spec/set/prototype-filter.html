@@ -2,7 +2,7 @@
 <p>When the `filter` method is called, the following steps are taken:</p>
 
 <emu-alg>
-  1. Let _thisArg_ be the *this* value.
+  1. Let _O_ be the *this* value.
   1. Perform ? RequireInternalSlot(_thisArg_, [[SetData]]).
   1. If IsCallable(_callbackfn_) is *false*, throw a *TypeError* exception.
   1. Let _resultSetData_ be a new empty List.
@@ -10,10 +10,10 @@
   1. Let _thisSize_ be the number of elements in _thisArg_.[[SetData]].
   1. Let _index_ be 0.
   1. Repeat, while _index_ &lt; _thisSize_,
-    1. Let _e_ be _thisArg_.[[SetData]][_index_].
+    1. Let _e_ be _O_.[[SetData]][_index_].
     1. Set _index_ to _index_ + 1.
     1. If _e_ is not ~empty~, then
-      1. Let _selected_ be ToBoolean(? Call(_callbackfn_, _thisArg_, « _kValue_, _kValue_, _thisArg_ »)).
+      1. Let _selected_ be ToBoolean(? Call(_callbackfn_, _thisArg_, « _kValue_, _kValue_, _O_ »)).
       1. If _selected_ is *true*, then:
         1. Append _e_ to _resultSetData_.
   1. Let _result_ be OrdinaryObjectCreate(%Set.prototype%, « [[SetData]] »).
