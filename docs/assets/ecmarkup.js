@@ -77,7 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (e.code === 'Escape') {
         sdoBox.deactivate();
       }
-    })
+    }),
   );
 });
 
@@ -94,11 +94,11 @@ function Search(menu) {
 
   this.$searchBox.addEventListener(
     'keydown',
-    debounce(this.searchBoxKeydown.bind(this), { stopPropagation: true })
+    debounce(this.searchBoxKeydown.bind(this), { stopPropagation: true }),
   );
   this.$searchBox.addEventListener(
     'keyup',
-    debounce(this.searchBoxKeyup.bind(this), { stopPropagation: true })
+    debounce(this.searchBoxKeyup.bind(this), { stopPropagation: true }),
   );
 
   // Perform an initial search if the box is not empty.
@@ -130,7 +130,7 @@ Search.prototype.loadBiblio = function () {
 };
 
 Search.prototype.documentKeydown = function (e) {
-  if (e.keyCode === 191) {
+  if (e.key === '/') {
     e.preventDefault();
     e.stopPropagation();
     this.triggerSearch();
@@ -209,7 +209,7 @@ Search.prototype.search = function (searchString) {
   if (/^[\d.]*$/.test(searchString)) {
     results = this.biblio.clauses
       .filter(clause => clause.number.substring(0, searchString.length) === searchString)
-      .map(clause => ({ entry: clause }));
+      .map(clause => ({ key: getKey(clause), entry: clause }));
   } else {
     results = [];
 
@@ -298,7 +298,6 @@ Search.prototype.displayResults = function (results) {
       }
 
       if (text) {
-        // prettier-ignore
         html += `<li class=menu-search-result-${cssClass}><a href="${makeLinkToId(id)}">${text}</a></li>`;
       }
     });
@@ -350,6 +349,14 @@ function Menu() {
   this._pinnedIds = {};
   this.loadPinEntries();
 
+  // unpin all button
+  document
+    .querySelector('#menu-pins .unpin-all')
+    .addEventListener('click', this.unpinAll.bind(this));
+
+  // individual unpinning buttons
+  this.$pinList.addEventListener('click', this.pinListClick.bind(this));
+
   // toggle menu
   this.$toggle.addEventListener('click', this.toggle.bind(this));
 
@@ -399,8 +406,8 @@ Menu.prototype.documentKeydown = function (e) {
   e.stopPropagation();
   if (e.keyCode === 80) {
     this.togglePinEntry();
-  } else if (e.keyCode > 48 && e.keyCode < 58) {
-    this.selectPin(e.keyCode - 49);
+  } else if (e.keyCode >= 48 && e.keyCode < 58) {
+    this.selectPin((e.keyCode - 9) % 10);
   }
 };
 
@@ -450,23 +457,66 @@ Menu.prototype.revealInToc = function (path) {
 };
 
 function findActiveClause(root, path) {
-  let clauses = getChildClauses(root);
   path = path || [];
 
-  for (let $clause of clauses) {
-    let rect = $clause.getBoundingClientRect();
-    let $header = $clause.querySelector('h1');
-    let marginTop = Math.max(
-      parseInt(getComputedStyle($clause)['margin-top']),
-      parseInt(getComputedStyle($header)['margin-top'])
-    );
+  let visibleClauses = getVisibleClauses(root, path);
+  let midpoint = Math.floor(window.innerHeight / 2);
 
-    if (rect.top - marginTop <= 1 && rect.bottom > 0) {
-      return findActiveClause($clause, path.concat($clause)) || path;
+  for (let [$clause, path] of visibleClauses) {
+    let { top: clauseTop, bottom: clauseBottom } = $clause.getBoundingClientRect();
+    let isFullyVisibleAboveTheFold =
+      clauseTop > 0 && clauseTop < midpoint && clauseBottom < window.innerHeight;
+    if (isFullyVisibleAboveTheFold) {
+      return path;
+    }
+  }
+
+  visibleClauses.sort(([, pathA], [, pathB]) => pathB.length - pathA.length);
+  for (let [$clause, path] of visibleClauses) {
+    let { top: clauseTop, bottom: clauseBottom } = $clause.getBoundingClientRect();
+    let $header = $clause.querySelector('h1');
+    let clauseStyles = getComputedStyle($clause);
+    let marginTop = Math.max(
+      0,
+      parseInt(clauseStyles['margin-top']),
+      parseInt(getComputedStyle($header)['margin-top']),
+    );
+    let marginBottom = Math.max(0, parseInt(clauseStyles['margin-bottom']));
+    let crossesMidpoint =
+      clauseTop - marginTop <= midpoint && clauseBottom + marginBottom >= midpoint;
+    if (crossesMidpoint) {
+      return path;
     }
   }
 
   return path;
+}
+
+function getVisibleClauses(root, path) {
+  let childClauses = getChildClauses(root);
+  path = path || [];
+
+  let result = [];
+
+  let seenVisibleClause = false;
+  for (let $clause of childClauses) {
+    let { top: clauseTop, bottom: clauseBottom } = $clause.getBoundingClientRect();
+    let isPartiallyVisible =
+      (clauseTop > 0 && clauseTop < window.innerHeight) ||
+      (clauseBottom > 0 && clauseBottom < window.innerHeight) ||
+      (clauseTop < 0 && clauseBottom > window.innerHeight);
+
+    if (isPartiallyVisible) {
+      seenVisibleClause = true;
+      let innerPath = path.concat($clause);
+      result.push([$clause, innerPath]);
+      result.push(...getVisibleClauses($clause, innerPath));
+    } else if (seenVisibleClause) {
+      break;
+    }
+  }
+
+  return result;
 }
 
 function* getChildClauses(root) {
@@ -519,6 +569,7 @@ Menu.prototype.addPinEntry = function (id) {
     return;
   }
 
+  let text;
   if (entry.type === 'clause') {
     let prefix;
     if (entry.number) {
@@ -526,11 +577,13 @@ Menu.prototype.addPinEntry = function (id) {
     } else {
       prefix = '';
     }
-    // prettier-ignore
-    this.$pinList.innerHTML += `<li><a href="${makeLinkToId(entry.id)}">${prefix}${entry.titleHTML}</a></li>`;
+    text = `${prefix}${entry.titleHTML}`;
   } else {
-    this.$pinList.innerHTML += `<li><a href="${makeLinkToId(entry.id)}">${getKey(entry)}</a></li>`;
+    text = getKey(entry);
   }
+
+  let link = `<a href="${makeLinkToId(entry.id)}">${text}</a>`;
+  this.$pinList.innerHTML += `<li data-section-id="${id}">${link}<button class="unpin">\u{2716}</button></li>`;
 
   if (Object.keys(this._pinnedIds).length === 0) {
     this.showPins();
@@ -540,7 +593,7 @@ Menu.prototype.addPinEntry = function (id) {
 };
 
 Menu.prototype.removePinEntry = function (id) {
-  let item = this.$pinList.querySelector(`a[href="${makeLinkToId(id)}"]`).parentNode;
+  let item = this.$pinList.querySelector(`li[data-section-id="${id}"]`);
   this.$pinList.removeChild(item);
   delete this._pinnedIds[id];
   if (Object.keys(this._pinnedIds).length === 0) {
@@ -548,6 +601,21 @@ Menu.prototype.removePinEntry = function (id) {
   }
 
   this.persistPinEntries();
+};
+
+Menu.prototype.unpinAll = function () {
+  for (let id of Object.keys(this._pinnedIds)) {
+    this.removePinEntry(id);
+  }
+};
+
+Menu.prototype.pinListClick = function (event) {
+  if (event?.target?.classList.contains('unpin')) {
+    let id = event.target.parentNode.dataset.sectionId;
+    if (id) {
+      this.removePinEntry(id);
+    }
+  }
 };
 
 Menu.prototype.persistPinEntries = function () {
@@ -588,6 +656,7 @@ Menu.prototype.togglePinEntry = function (id) {
 };
 
 Menu.prototype.selectPin = function (num) {
+  if (num >= this.$pinList.children.length) return;
   document.location = this.$pinList.children[num].children[0].href;
 };
 
@@ -749,6 +818,7 @@ let referencePane = {
 
     let $spacer = document.createElement('div');
     $spacer.setAttribute('id', 'references-pane-spacer');
+    $spacer.classList.add('menu-spacer');
 
     this.$pane = document.createElement('div');
     this.$pane.setAttribute('id', 'references-pane');
@@ -762,6 +832,10 @@ let referencePane = {
     this.$header.appendChild(this.$headerText);
     this.$headerRefId = document.createElement('a');
     this.$header.appendChild(this.$headerRefId);
+    this.$header.addEventListener('pointerdown', e => {
+      this.dragStart(e);
+    });
+
     this.$closeButton = document.createElement('span');
     this.$closeButton.setAttribute('id', 'references-pane-close');
     this.$closeButton.addEventListener('click', () => {
@@ -770,18 +844,20 @@ let referencePane = {
     this.$header.appendChild(this.$closeButton);
 
     this.$pane.appendChild(this.$header);
-    let tableContainer = document.createElement('div');
-    tableContainer.setAttribute('id', 'references-pane-table-container');
+    this.$tableContainer = document.createElement('div');
+    this.$tableContainer.setAttribute('id', 'references-pane-table-container');
 
     this.$table = document.createElement('table');
     this.$table.setAttribute('id', 'references-pane-table');
 
     this.$tableBody = this.$table.createTBody();
 
-    tableContainer.appendChild(this.$table);
-    this.$pane.appendChild(tableContainer);
+    this.$tableContainer.appendChild(this.$table);
+    this.$pane.appendChild(this.$tableContainer);
 
-    menu.$specContainer.appendChild(this.$container);
+    if (menu != null) {
+      menu.$specContainer.appendChild(this.$container);
+    }
   },
 
   activate() {
@@ -801,7 +877,7 @@ let referencePane = {
     let previousId;
     let previousCell;
     let dupCount = 0;
-    this.$headerRefId.textContent = '#' + entry.id;
+    this.$headerRefId.innerHTML = getKey(entry);
     this.$headerRefId.setAttribute('href', makeLinkToId(entry.id));
     this.$headerRefId.style.display = 'inline';
     (entry.referencingIds || [])
@@ -832,6 +908,7 @@ let referencePane = {
     this.$table.removeChild(this.$tableBody);
     this.$tableBody = newBody;
     this.$table.appendChild(this.$tableBody);
+    this.autoSize();
   },
 
   showSDOs(sdos, alternativeId) {
@@ -849,7 +926,6 @@ let referencePane = {
       e.parentNode.replaceChild(document.createTextNode(e.textContent), e);
     });
 
-    // prettier-ignore
     this.$headerText.innerHTML = `Syntax-Directed Operations for<br><a href="${makeLinkToId(alternativeId)}" class="menu-pane-header-production"><emu-nt>${parentName}</emu-nt> ${colons.outerHTML} </a>`;
     this.$headerText.querySelector('a').append(rhs);
     this.showSDOsBody(sdos, alternativeId);
@@ -878,6 +954,34 @@ let referencePane = {
     this.$table.removeChild(this.$tableBody);
     this.$tableBody = newBody;
     this.$table.appendChild(this.$tableBody);
+    this.autoSize();
+  },
+
+  autoSize() {
+    this.$tableContainer.style.height =
+      Math.min(250, this.$table.getBoundingClientRect().height) + 'px';
+  },
+
+  dragStart(pointerDownEvent) {
+    let startingMousePos = pointerDownEvent.clientY;
+    let startingHeight = this.$tableContainer.getBoundingClientRect().height;
+    let moveListener = pointerMoveEvent => {
+      if (pointerMoveEvent.buttons === 0) {
+        removeListeners();
+        return;
+      }
+      let desiredHeight = startingHeight - (pointerMoveEvent.clientY - startingMousePos);
+      this.$tableContainer.style.height = Math.max(0, desiredHeight) + 'px';
+    };
+    let listenerOptions = { capture: true, passive: true };
+    let removeListeners = () => {
+      document.removeEventListener('pointermove', moveListener, listenerOptions);
+      this.$header.removeEventListener('pointerup', removeListeners, listenerOptions);
+      this.$header.removeEventListener('pointercancel', removeListeners, listenerOptions);
+    };
+    document.addEventListener('pointermove', moveListener, listenerOptions);
+    this.$header.addEventListener('pointerup', removeListeners, listenerOptions);
+    this.$header.addEventListener('pointercancel', removeListeners, listenerOptions);
   },
 };
 
@@ -897,6 +1001,7 @@ let Toolbox = {
       e.preventDefault();
       e.stopPropagation();
       menu.togglePinEntry(this.entry.id);
+      this.$pinLink.textContent = menu._pinnedIds[this.entry.id] ? 'Unpin' : 'Pin';
     });
 
     this.$refsLink = document.createElement('a');
@@ -907,7 +1012,9 @@ let Toolbox = {
       referencePane.showReferencesFor(this.entry);
     });
     this.$container.appendChild(this.$permalink);
+    this.$container.appendChild(document.createTextNode(' '));
     this.$container.appendChild(this.$pinLink);
+    this.$container.appendChild(document.createTextNode(' '));
     this.$container.appendChild(this.$refsLink);
     document.body.appendChild(this.$outer);
   },
@@ -917,6 +1024,7 @@ let Toolbox = {
     sdoBox.deactivate();
     this.active = true;
     this.entry = entry;
+    this.$pinLink.textContent = menu._pinnedIds[entry.id] ? 'Unpin' : 'Pin';
     this.$outer.classList.add('active');
     this.top = el.offsetTop - this.$outer.offsetHeight;
     this.left = el.offsetLeft - 10;
@@ -935,7 +1043,7 @@ let Toolbox = {
   },
 
   updateReferences() {
-    this.$refsLink.textContent = `References (${this.entry.referencingIds.length})`;
+    this.$refsLink.textContent = `References (${(this.entry.referencingIds || []).length})`;
   },
 
   activateIfMouseOver(e) {
@@ -1056,7 +1164,7 @@ function doShortcut(e) {
   if (name === 'textarea' || name === 'input' || name === 'select' || target.isContentEditable) {
     return;
   }
-  if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) {
+  if (e.altKey || e.ctrlKey || e.metaKey) {
     return;
   }
   if (e.key === 'm' && usesMultipage) {
@@ -1078,25 +1186,33 @@ function doShortcut(e) {
     }
   } else if (e.key === 'u') {
     document.documentElement.classList.toggle('show-ao-annotations');
+  } else if (e.key === '?') {
+    document.getElementById('shortcuts-help').classList.toggle('active');
   }
 }
 
 function init() {
+  if (document.getElementById('menu') == null) {
+    return;
+  }
   menu = new Menu();
   let $container = document.getElementById('spec-container');
   $container.addEventListener(
     'mouseover',
     debounce(e => {
       Toolbox.activateIfMouseOver(e);
-    })
+    }),
   );
   document.addEventListener(
     'keydown',
     debounce(e => {
-      if (e.code === 'Escape' && Toolbox.active) {
-        Toolbox.deactivate();
+      if (e.code === 'Escape') {
+        if (Toolbox.active) {
+          Toolbox.deactivate();
+        }
+        document.getElementById('shortcuts-help').classList.remove('active');
       }
-    })
+    }),
   );
 }
 
@@ -1107,37 +1223,337 @@ document.addEventListener('DOMContentLoaded', () => {
   referencePane.init();
 });
 
-'use strict';
-let decimalBullet = Array.from({ length: 100 }, (a, i) => '' + (i + 1));
-let alphaBullet = Array.from({ length: 26 }, (a, i) => String.fromCharCode('a'.charCodeAt(0) + i));
+// preserve state during navigation
 
-// prettier-ignore
-let romanBullet = ['i', 'ii', 'iii', 'iv', 'v', 'vi', 'vii', 'viii', 'ix', 'x', 'xi', 'xii', 'xiii', 'xiv', 'xv', 'xvi', 'xvii', 'xviii', 'xix', 'xx', 'xxi', 'xxii', 'xxiii', 'xxiv', 'xxv'];
-// prettier-ignore
-let bullets = [decimalBullet, alphaBullet, romanBullet, decimalBullet, alphaBullet, romanBullet];
-
-function addStepNumberText(ol, parentIndex) {
-  for (let i = 0; i < ol.children.length; ++i) {
-    let child = ol.children[i];
-    let index = parentIndex.concat([i]);
-    let applicable = bullets[Math.min(index.length - 1, 5)];
-    let span = document.createElement('span');
-    span.textContent = (applicable[i] || '?') + '. ';
-    span.style.fontSize = '0';
-    span.setAttribute('aria-hidden', 'true');
-    child.prepend(span);
-    let sublist = child.querySelector('ol');
-    if (sublist != null) {
-      addStepNumberText(sublist, index);
+function getTocPath(li) {
+  let path = [];
+  let pointer = li;
+  while (true) {
+    let parent = pointer.parentElement;
+    if (parent == null) {
+      return null;
+    }
+    let index = [].indexOf.call(parent.children, pointer);
+    if (index == -1) {
+      return null;
+    }
+    path.unshift(index);
+    pointer = parent.parentElement;
+    if (pointer == null) {
+      return null;
+    }
+    if (pointer.id === 'menu-toc') {
+      break;
+    }
+    if (pointer.tagName !== 'LI') {
+      return null;
     }
   }
+  return path;
 }
+
+function activateTocPath(path) {
+  try {
+    let pointer = document.getElementById('menu-toc');
+    for (let index of path) {
+      pointer = pointer.querySelector('ol').children[index];
+    }
+    pointer.classList.add('active');
+  } catch (e) {
+    // pass
+  }
+}
+
+function getActiveTocPaths() {
+  return [...menu.$menu.querySelectorAll('.active')].map(getTocPath).filter(p => p != null);
+}
+
+function initTOCExpansion(visibleItemLimit) {
+  // Initialize to a reasonable amount of TOC expansion:
+  // * Expand any full-breadth nesting level up to visibleItemLimit.
+  // * Expand any *single-item* level while under visibleItemLimit (even if that pushes over it).
+
+  // Limit to initialization by bailing out if any parent item is already expanded.
+  const tocItems = Array.from(document.querySelectorAll('#menu-toc li'));
+  if (tocItems.some(li => li.classList.contains('active') && li.querySelector('li'))) {
+    return;
+  }
+
+  const selfAndSiblings = maybe => Array.from(maybe?.parentNode.children ?? []);
+  let currentLevelItems = selfAndSiblings(tocItems[0]);
+  let availableCount = visibleItemLimit - currentLevelItems.length;
+  while (availableCount > 0 && currentLevelItems.length) {
+    const nextLevelItems = currentLevelItems.flatMap(li => selfAndSiblings(li.querySelector('li')));
+    availableCount -= nextLevelItems.length;
+    if (availableCount > 0 || currentLevelItems.length === 1) {
+      // Expand parent items of the next level down (i.e., current-level items with children).
+      for (const ol of new Set(nextLevelItems.map(li => li.parentNode))) {
+        ol.closest('li').classList.add('active');
+      }
+    }
+    currentLevelItems = nextLevelItems;
+  }
+}
+
+function initState() {
+  if (typeof menu === 'undefined' || window.navigating) {
+    return;
+  }
+  const storage = typeof sessionStorage !== 'undefined' ? sessionStorage : Object.create(null);
+  if (storage.referencePaneState != null) {
+    let state = JSON.parse(storage.referencePaneState);
+    if (state != null) {
+      if (state.type === 'ref') {
+        let entry = menu.search.biblio.byId[state.id];
+        if (entry != null) {
+          referencePane.showReferencesFor(entry);
+        }
+      } else if (state.type === 'sdo') {
+        let sdos = sdoMap[state.id];
+        if (sdos != null) {
+          referencePane.$headerText.innerHTML = state.html;
+          referencePane.showSDOsBody(sdos, state.id);
+        }
+      }
+      delete storage.referencePaneState;
+    }
+  }
+
+  if (storage.activeTocPaths != null) {
+    document.querySelectorAll('#menu-toc li.active').forEach(li => li.classList.remove('active'));
+    let active = JSON.parse(storage.activeTocPaths);
+    active.forEach(activateTocPath);
+    delete storage.activeTocPaths;
+  } else {
+    initTOCExpansion(20);
+  }
+
+  if (storage.searchValue != null) {
+    let value = JSON.parse(storage.searchValue);
+    menu.search.$searchBox.value = value;
+    menu.search.search(value);
+    delete storage.searchValue;
+  }
+
+  if (storage.tocScroll != null) {
+    let tocScroll = JSON.parse(storage.tocScroll);
+    menu.$toc.scrollTop = tocScroll;
+    delete storage.tocScroll;
+  }
+}
+
+document.addEventListener('DOMContentLoaded', initState);
+
+window.addEventListener('pageshow', initState);
+
+window.addEventListener('beforeunload', () => {
+  if (!window.sessionStorage || typeof menu === 'undefined') {
+    return;
+  }
+  sessionStorage.referencePaneState = JSON.stringify(referencePane.state || null);
+  sessionStorage.activeTocPaths = JSON.stringify(getActiveTocPaths());
+  sessionStorage.searchValue = JSON.stringify(menu.search.$searchBox.value);
+  sessionStorage.tocScroll = JSON.stringify(menu.$toc.scrollTop);
+});
+
+'use strict';
+
+// Manually prefix algorithm step list items with hidden counter representations
+// corresponding with their markers so they get selected and copied with content.
+// We read list-style-type to avoid divergence with the style sheet, but
+// for efficiency assume that all lists at the same nesting depth use the same
+// style (except for those associated with replacement steps).
+// We also precompute some initial items for each supported style type.
+// https://w3c.github.io/csswg-drafts/css-counter-styles/
+
+const lowerLetters = Array.from({ length: 26 }, (_, i) =>
+  String.fromCharCode('a'.charCodeAt(0) + i),
+);
+// Implement the lower-alpha 'alphabetic' algorithm,
+// adjusting for indexing from 0 rather than 1.
+// https://w3c.github.io/csswg-drafts/css-counter-styles/#simple-alphabetic
+// https://w3c.github.io/csswg-drafts/css-counter-styles/#alphabetic-system
+const lowerAlphaTextForIndex = i => {
+  let S = '';
+  for (const N = lowerLetters.length; i >= 0; i--) {
+    S = lowerLetters[i % N] + S;
+    i = Math.floor(i / N);
+  }
+  return S;
+};
+
+const weightedLowerRomanSymbols = Object.entries({
+  m: 1000,
+  cm: 900,
+  d: 500,
+  cd: 400,
+  c: 100,
+  xc: 90,
+  l: 50,
+  xl: 40,
+  x: 10,
+  ix: 9,
+  v: 5,
+  iv: 4,
+  i: 1,
+});
+// Implement the lower-roman 'additive' algorithm,
+// adjusting for indexing from 0 rather than 1.
+// https://w3c.github.io/csswg-drafts/css-counter-styles/#simple-numeric
+// https://w3c.github.io/csswg-drafts/css-counter-styles/#additive-system
+const lowerRomanTextForIndex = i => {
+  let value = i + 1;
+  let S = '';
+  for (const [symbol, weight] of weightedLowerRomanSymbols) {
+    if (!value) break;
+    if (weight > value) continue;
+    const reps = Math.floor(value / weight);
+    S += symbol.repeat(reps);
+    value -= weight * reps;
+  }
+  return S;
+};
+
+// Memoize pure index-to-text functions with an exposed cache for fast retrieval.
+const makeCounter = (pureGetTextForIndex, precomputeCount = 30) => {
+  const cache = Array.from({ length: precomputeCount }, (_, i) => pureGetTextForIndex(i));
+  const getTextForIndex = i => {
+    if (i >= cache.length) cache[i] = pureGetTextForIndex(i);
+    return cache[i];
+  };
+  return { getTextForIndex, cache };
+};
+
+const counterByStyle = {
+  __proto__: null,
+  decimal: makeCounter(i => String(i + 1)),
+  'lower-alpha': makeCounter(lowerAlphaTextForIndex),
+  'upper-alpha': makeCounter(i => lowerAlphaTextForIndex(i).toUpperCase()),
+  'lower-roman': makeCounter(lowerRomanTextForIndex),
+  'upper-roman': makeCounter(i => lowerRomanTextForIndex(i).toUpperCase()),
+};
+const fallbackCounter = makeCounter(() => '?');
+const counterByDepth = [];
+
+function addStepNumberText(
+  ol,
+  depth = 0,
+  special = [...ol.classList].some(c => c.startsWith('nested-')),
+) {
+  let counter = !special && counterByDepth[depth];
+  if (!counter) {
+    const counterStyle = getComputedStyle(ol)['list-style-type'];
+    counter = counterByStyle[counterStyle];
+    if (!counter) {
+      console.warn('unsupported list-style-type', {
+        ol,
+        counterStyle,
+        id: ol.closest('[id]')?.getAttribute('id'),
+      });
+      counterByStyle[counterStyle] = fallbackCounter;
+      counter = fallbackCounter;
+    }
+    if (!special) {
+      counterByDepth[depth] = counter;
+    }
+  }
+  const { cache, getTextForIndex } = counter;
+  let i = (Number(ol.getAttribute('start')) || 1) - 1;
+  for (const li of ol.children) {
+    const marker = document.createElement('span');
+    marker.textContent = `${i < cache.length ? cache[i] : getTextForIndex(i)}. `;
+    marker.setAttribute('aria-hidden', 'true');
+    const attributesContainer = li.querySelector('.attributes-tag');
+    if (attributesContainer == null) {
+      li.prepend(marker);
+    } else {
+      attributesContainer.insertAdjacentElement('afterend', marker);
+    }
+    for (const sublist of li.querySelectorAll(':scope > ol')) {
+      addStepNumberText(sublist, depth + 1, special);
+    }
+    i++;
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('emu-alg > ol').forEach(ol => {
-    addStepNumberText(ol, []);
+    addStepNumberText(ol);
+  });
+});
+
+'use strict';
+
+// Update superscripts to not suffer misinterpretation when copied and pasted as plain text.
+// For example,
+// * Replace `10<sup>3</sup>` with
+//   `10<span aria-hidden="true">**</span><sup>3</sup>`
+//   so it gets pasted as `10**3` rather than `103`.
+// * Replace `10<sup>-<var>x</var></sup>` with
+//   `10<span aria-hidden="true">**</span><sup>-<var>x</var></sup>`
+//   so it gets pasted as `10**-x` rather than `10-x`.
+// * Replace `2<sup><var>a</var> + 1</sup>` with
+//   `2<span …>**(</span><sup><var>a</var> + 1</sup><span …>)</span>`
+//   so it gets pasted as `2**(a + 1)` rather than `2a + 1`.
+
+function makeExponentPlainTextSafe(sup) {
+  // Change a <sup> only if it appears to be an exponent:
+  // * text-only and contains only mathematical content (not e.g. `1<sup>st</sup>`)
+  // * contains only <var>s and internal links (e.g.
+  //   `2<sup><emu-xref><a href="#ℝ">ℝ</a></emu-xref>(_y_)</sup>`)
+  const isText = [...sup.childNodes].every(node => node.nodeType === 3);
+  const text = sup.textContent;
+  if (isText) {
+    if (!/^[0-9. 𝔽ℝℤ()=*×/÷±+\u2212-]+$/u.test(text)) {
+      return;
+    }
+  } else {
+    if (sup.querySelector('*:not(var, emu-xref, :scope emu-xref a)')) {
+      return;
+    }
+  }
+
+  let prefix = '**';
+  let suffix = '';
+
+  // Add wrapping parentheses unless they are already present
+  // or this is a simple (possibly signed) integer or single-variable exponent.
+  const skipParens =
+    /^[±+\u2212-]?(?:[0-9]+|\p{ID_Start}\p{ID_Continue}*)$/u.test(text) ||
+    // Split on parentheses and remember them; the resulting parts must
+    // start and end empty (i.e., with open/close parentheses)
+    // and increase depth to 1 only at the first parenthesis
+    // to e.g. wrap `(a+1)*(b+1)` but not `((a+1)*(b+1))`.
+    text
+      .trim()
+      .split(/([()])/g)
+      .reduce((depth, s, i, parts) => {
+        if (s === '(') {
+          return depth > 0 || i === 1 ? depth + 1 : NaN;
+        } else if (s === ')') {
+          return depth > 0 ? depth - 1 : NaN;
+        } else if (s === '' || (i > 0 && i < parts.length - 1)) {
+          return depth;
+        }
+        return NaN;
+      }, 0) === 0;
+  if (!skipParens) {
+    prefix += '(';
+    suffix += ')';
+  }
+
+  sup.insertAdjacentHTML('beforebegin', `<span aria-hidden="true">${prefix}</span>`);
+  if (suffix) {
+    sup.insertAdjacentHTML('afterend', `<span aria-hidden="true">${suffix}</span>`);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('sup:not(.text)').forEach(sup => {
+    makeExponentPlainTextSafe(sup);
   });
 });
 
 let sdoMap = JSON.parse(`{}`);
-let biblio = JSON.parse(`{"refsByClause":{"Set.prototype.filter":["_ref_0","_ref_1","_ref_2","_ref_3","_ref_4","_ref_5","_ref_6","_ref_7","_ref_8"],"Set.prototype.map":["_ref_9","_ref_10","_ref_11","_ref_12","_ref_13","_ref_14","_ref_15","_ref_16"],"Set.prototype.find":["_ref_17","_ref_18","_ref_19","_ref_20"],"Set.prototype.some":["_ref_21","_ref_22","_ref_23","_ref_24"],"Set.prototype.every":["_ref_25","_ref_26","_ref_27","_ref_28"],"Set.prototype.reduce":["_ref_29","_ref_30","_ref_31"],"Set.prototype.join":["_ref_32","_ref_33","_ref_34"],"Set.prototype.add-elements":["_ref_35","_ref_36","_ref_37","_ref_38"],"Set.prototype.remove-elements":["_ref_39","_ref_40","_ref_41","_ref_42","_ref_43"],"Map.prototype.filter":["_ref_44","_ref_45","_ref_46","_ref_47","_ref_48","_ref_49","_ref_50","_ref_51","_ref_52","_ref_53","_ref_54"],"Map.prototype.find":["_ref_55","_ref_56","_ref_57","_ref_58"],"Map.prototype.findKey":["_ref_59","_ref_60","_ref_61","_ref_62"],"Map.prototype.keyOf":["_ref_63","_ref_64"],"Map.prototype.some":["_ref_65","_ref_66","_ref_67","_ref_68"],"Map.prototype.every":["_ref_69","_ref_70","_ref_71","_ref_72"],"Map.prototype.includes":["_ref_73","_ref_74"],"Map.prototype.reduce":["_ref_75","_ref_76","_ref_77"],"Map.prototype.deleteAll":["_ref_78","_ref_79","_ref_80","_ref_81"],"Map.keyBy":["_ref_82","_ref_83","_ref_84","_ref_85","_ref_86","_ref_87","_ref_88","_ref_89","_ref_90","_ref_91"],"Map.groupBy":["_ref_92","_ref_93","_ref_94","_ref_95","_ref_96","_ref_97","_ref_98","_ref_99","_ref_100","_ref_101","_ref_102","_ref_103","_ref_104","_ref_105"],"WeakSet.prototype.addAll":["_ref_106","_ref_107","_ref_108","_ref_109"],"WeakSet.prototype.deleteAll":["_ref_110","_ref_111","_ref_112","_ref_113"],"WeakMap.prototype.deleteAll":["_ref_114","_ref_115","_ref_116","_ref_117"]},"entries":[{"type":"clause","id":"formalities","titleHTML":"Formal informations","number":"1"},{"type":"clause","id":"Set.prototype.filter","title":"Set.prototype.filter( callbackfn [ , thisArg ] )","titleHTML":"Set.prototype.filter( <var>callbackfn</var> [ , <var>thisArg</var> ] )","number":"2.1"},{"type":"clause","id":"Set.prototype.map","title":"Set.prototype.map( callbackfn [ , thisArg ] )","titleHTML":"Set.prototype.map( <var>callbackfn</var> [ , <var>thisArg</var> ] )","number":"2.2"},{"type":"clause","id":"Set.prototype.find","title":"Set.prototype.find( callbackfn [ , thisArg ] )","titleHTML":"Set.prototype.find( <var>callbackfn</var> [ , <var>thisArg</var> ] )","number":"2.3"},{"type":"clause","id":"Set.prototype.some","title":"Set.prototype.some( callbackfn [ , thisArg ] )","titleHTML":"Set.prototype.some( <var>callbackfn</var> [ , <var>thisArg</var> ] )","number":"2.4"},{"type":"clause","id":"Set.prototype.every","title":"Set.prototype.every( callbackfn [ , thisArg ] )","titleHTML":"Set.prototype.every( <var>callbackfn</var> [ , <var>thisArg</var> ] )","number":"2.5"},{"type":"clause","id":"Set.prototype.reduce","title":"Set.prototype.reduce( callbackfn [ , initialValue ] )","titleHTML":"Set.prototype.reduce( <var>callbackfn</var> [ , <var>initialValue</var> ] )","number":"2.6"},{"type":"clause","id":"Set.prototype.join","title":"Set.prototype.join( [ separator ] )","titleHTML":"Set.prototype.join( [ <var>separator</var> ] )","number":"2.7"},{"type":"clause","id":"Set.prototype.add-elements","title":"Set.prototype.addAll(...items)","titleHTML":"Set.prototype.addAll(...<var>items</var>)","number":"2.8"},{"type":"clause","id":"Set.prototype.remove-elements","title":"Set.prototype.deleteAll(...items)","titleHTML":"Set.prototype.deleteAll(...<var>items</var>)","number":"2.9"},{"type":"clause","id":"Set.prototype","titleHTML":"Set.prototype methods","number":"2"},{"type":"clause","id":"Map.prototype.mapValues","title":"Map.prototype.mapValues( callbackfn, [ thisArg ] )","titleHTML":"Map.prototype.mapValues( <var>callbackfn</var>, [ <var>thisArg</var> ] )","number":"3.1"},{"type":"clause","id":"Map.prototype.mapKeys","title":"Map.prototype.mapKeys( callbackfn, [ thisArg ] )","titleHTML":"Map.prototype.mapKeys( <var>callbackfn</var>, [ <var>thisArg</var> ] )","number":"3.2"},{"type":"clause","id":"Map.prototype.filter","title":"Map.prototype.filter( callbackfn, [ thisArg ] )","titleHTML":"Map.prototype.filter( <var>callbackfn</var>, [ <var>thisArg</var> ] )","number":"3.3"},{"type":"clause","id":"Map.prototype.find","title":"Map.prototype.find( callbackfn [ , thisArg ] )","titleHTML":"Map.prototype.find( <var>callbackfn</var> [ , <var>thisArg</var> ] )","number":"3.4"},{"type":"clause","id":"Map.prototype.findKey","title":"Map.prototype.findKey( callbackfn [ , thisArg ] )","titleHTML":"Map.prototype.findKey( <var>callbackfn</var> [ , <var>thisArg</var> ] )","number":"3.5"},{"type":"clause","id":"Map.prototype.keyOf","title":"Map.prototype.keyOf( searchElement )","titleHTML":"Map.prototype.keyOf( <var>searchElement</var> )","number":"3.6"},{"type":"clause","id":"Map.prototype.some","title":"Map.prototype.some( callbackfn [ , thisArg ] )","titleHTML":"Map.prototype.some( <var>callbackfn</var> [ , <var>thisArg</var> ] )","number":"3.7"},{"type":"clause","id":"Map.prototype.every","title":"Map.prototype.every( callbackfn [ , thisArg ] )","titleHTML":"Map.prototype.every( <var>callbackfn</var> [ , <var>thisArg</var> ] )","number":"3.8"},{"type":"clause","id":"Map.prototype.includes","title":"Map.prototype.includes( searchElement )","titleHTML":"Map.prototype.includes( <var>searchElement</var> )","number":"3.9"},{"type":"clause","id":"Map.prototype.reduce","title":"Map.prototype.reduce( callbackfn [ , initialValue ] )","titleHTML":"Map.prototype.reduce( <var>callbackfn</var> [ , <var>initialValue</var> ] )","number":"3.10"},{"type":"clause","id":"Map.prototype.merge","title":"Map.prototype.merge(... iterables )","titleHTML":"Map.prototype.merge(... <var>iterables</var> )","number":"3.11"},{"type":"clause","id":"Map.prototype.deleteAll","title":"Map.prototype.deleteAll(...items)","titleHTML":"Map.prototype.deleteAll(...<var>items</var>)","number":"3.12"},{"type":"clause","id":"Map.prototype.update","title":"Map.prototype.update(key, callback [, thunk])","titleHTML":"Map.prototype.update(<var>key</var>, <var>callback</var> [, <var>thunk</var>])","number":"3.13"},{"type":"clause","id":"Map.prototype","titleHTML":"Map.prototype methods","number":"3"},{"type":"clause","id":"Map.keyBy","title":"Map.keyBy( iterable, callbackfn)","titleHTML":"Map.keyBy( <var>iterable</var>, <var>callbackfn</var>)","number":"4.1"},{"type":"clause","id":"Map.groupBy","title":"Map.groupBy( iterable, callbackfn)","titleHTML":"Map.groupBy( <var>iterable</var>, <var>callbackfn</var>)","number":"4.2"},{"type":"clause","id":"Map","titleHTML":"Map static methods","number":"4"},{"type":"clause","id":"WeakSet.prototype.addAll","title":"WeakSet.prototype.addAll(...items)","titleHTML":"WeakSet.prototype.addAll(...<var>items</var>)","number":"5"},{"type":"clause","id":"WeakSet.prototype.deleteAll","title":"WeakSet.prototype.deleteAll(...items)","titleHTML":"WeakSet.prototype.deleteAll(...<var>items</var>)","number":"6"},{"type":"clause","id":"WeakMap.prototype.deleteAll","title":"WeakMap.prototype.deleteAll(...items)","titleHTML":"WeakMap.prototype.deleteAll(...<var>items</var>)","number":"7"},{"type":"clause","id":"sec-copyright-and-software-license","title":"Copyright & Software License","titleHTML":"Copyright &amp; Software License","number":"A"}]}`);
+let biblio = JSON.parse(`{"refsByClause":{},"entries":[{"type":"clause","id":"formalities","titleHTML":"Formal informations","number":"1"},{"type":"clause","id":"Set.prototype.filter","title":"Set.prototype.filter( callbackfn [ , thisArg ] )","titleHTML":"Set.prototype.filter( <var>callbackfn</var> [ , <var>thisArg</var> ] )","number":"2.1"},{"type":"clause","id":"Set.prototype.map","title":"Set.prototype.map( callbackfn [ , thisArg ] )","titleHTML":"Set.prototype.map( <var>callbackfn</var> [ , <var>thisArg</var> ] )","number":"2.2"},{"type":"clause","id":"Set.prototype.find","title":"Set.prototype.find( callbackfn [ , thisArg ] )","titleHTML":"Set.prototype.find( <var>callbackfn</var> [ , <var>thisArg</var> ] )","number":"2.3"},{"type":"clause","id":"Set.prototype.some","title":"Set.prototype.some( callbackfn [ , thisArg ] )","titleHTML":"Set.prototype.some( <var>callbackfn</var> [ , <var>thisArg</var> ] )","number":"2.4"},{"type":"clause","id":"Set.prototype.every","title":"Set.prototype.every( callbackfn [ , thisArg ] )","titleHTML":"Set.prototype.every( <var>callbackfn</var> [ , <var>thisArg</var> ] )","number":"2.5"},{"type":"clause","id":"Set.prototype.reduce","title":"Set.prototype.reduce( callbackfn [ , initialValue ] )","titleHTML":"Set.prototype.reduce( <var>callbackfn</var> [ , <var>initialValue</var> ] )","number":"2.6"},{"type":"clause","id":"Set.prototype.join","title":"Set.prototype.join( [ separator ] )","titleHTML":"Set.prototype.join( [ <var>separator</var> ] )","number":"2.7"},{"type":"clause","id":"Set.prototype.add-elements","title":"Set.prototype.addAll(...items)","titleHTML":"Set.prototype.addAll(...<var>items</var>)","number":"2.8"},{"type":"clause","id":"Set.prototype.remove-elements","title":"Set.prototype.deleteAll(...items)","titleHTML":"Set.prototype.deleteAll(...<var>items</var>)","number":"2.9"},{"type":"clause","id":"Set.prototype","titleHTML":"Set.prototype methods","number":"2"},{"type":"clause","id":"Map.prototype.mapValues","title":"Map.prototype.mapValues( callbackfn, [ thisArg ] )","titleHTML":"Map.prototype.mapValues( <var>callbackfn</var>, [ <var>thisArg</var> ] )","number":"3.1"},{"type":"clause","id":"Map.prototype.mapKeys","title":"Map.prototype.mapKeys( callbackfn, [ thisArg ] )","titleHTML":"Map.prototype.mapKeys( <var>callbackfn</var>, [ <var>thisArg</var> ] )","number":"3.2"},{"type":"clause","id":"Map.prototype.filter","title":"Map.prototype.filter( callbackfn, [ thisArg ] )","titleHTML":"Map.prototype.filter( <var>callbackfn</var>, [ <var>thisArg</var> ] )","number":"3.3"},{"type":"clause","id":"Map.prototype.find","title":"Map.prototype.find( callbackfn [ , thisArg ] )","titleHTML":"Map.prototype.find( <var>callbackfn</var> [ , <var>thisArg</var> ] )","number":"3.4"},{"type":"clause","id":"Map.prototype.findKey","title":"Map.prototype.findKey( callbackfn [ , thisArg ] )","titleHTML":"Map.prototype.findKey( <var>callbackfn</var> [ , <var>thisArg</var> ] )","number":"3.5"},{"type":"clause","id":"Map.prototype.keyOf","title":"Map.prototype.keyOf( searchElement )","titleHTML":"Map.prototype.keyOf( <var>searchElement</var> )","number":"3.6"},{"type":"clause","id":"Map.prototype.some","title":"Map.prototype.some( callbackfn [ , thisArg ] )","titleHTML":"Map.prototype.some( <var>callbackfn</var> [ , <var>thisArg</var> ] )","number":"3.7"},{"type":"clause","id":"Map.prototype.every","title":"Map.prototype.every( callbackfn [ , thisArg ] )","titleHTML":"Map.prototype.every( <var>callbackfn</var> [ , <var>thisArg</var> ] )","number":"3.8"},{"type":"clause","id":"Map.prototype.includes","title":"Map.prototype.includes( searchElement )","titleHTML":"Map.prototype.includes( <var>searchElement</var> )","number":"3.9"},{"type":"clause","id":"Map.prototype.reduce","title":"Map.prototype.reduce( callbackfn [ , initialValue ] )","titleHTML":"Map.prototype.reduce( <var>callbackfn</var> [ , <var>initialValue</var> ] )","number":"3.10"},{"type":"clause","id":"Map.prototype.merge","title":"Map.prototype.merge(... iterables )","titleHTML":"Map.prototype.merge(... <var>iterables</var> )","number":"3.11"},{"type":"clause","id":"Map.prototype.deleteAll","title":"Map.prototype.deleteAll(...items)","titleHTML":"Map.prototype.deleteAll(...<var>items</var>)","number":"3.12"},{"type":"clause","id":"Map.prototype.update","title":"Map.prototype.update(key, callback [, thunk])","titleHTML":"Map.prototype.update(<var>key</var>, <var>callback</var> [, <var>thunk</var>])","number":"3.13"},{"type":"clause","id":"Map.prototype","titleHTML":"Map.prototype methods","number":"3"},{"type":"clause","id":"Map.keyBy","title":"Map.keyBy( iterable, callbackfn)","titleHTML":"Map.keyBy( <var>iterable</var>, <var>callbackfn</var>)","number":"4.1"},{"type":"clause","id":"Map.groupBy","title":"Map.groupBy( iterable, callbackfn)","titleHTML":"Map.groupBy( <var>iterable</var>, <var>callbackfn</var>)","number":"4.2"},{"type":"clause","id":"Map","titleHTML":"Map static methods","number":"4"},{"type":"clause","id":"WeakSet.prototype.addAll","title":"WeakSet.prototype.addAll(...items)","titleHTML":"WeakSet.prototype.addAll(...<var>items</var>)","number":"5"},{"type":"clause","id":"WeakSet.prototype.deleteAll","title":"WeakSet.prototype.deleteAll(...items)","titleHTML":"WeakSet.prototype.deleteAll(...<var>items</var>)","number":"6"},{"type":"clause","id":"WeakMap.prototype.deleteAll","title":"WeakMap.prototype.deleteAll(...items)","titleHTML":"WeakMap.prototype.deleteAll(...<var>items</var>)","number":"7"},{"type":"clause","id":"sec-copyright-and-software-license","title":"Copyright & Software License","titleHTML":"Copyright &amp; Software License","number":"A"}]}`);
 ;let usesMultipage = false

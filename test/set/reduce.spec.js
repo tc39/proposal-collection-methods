@@ -1,6 +1,4 @@
-'use strict';
-
-const {assert} = require('chai');
+import {assert} from 'chai';
 
 describe.skip('Set.prototype.reduce', () => {
     it('Should be present', () => {

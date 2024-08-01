@@ -1,13 +1,14 @@
 {
   "private": true,
   "name": "proposal-set-methods",
-  "description": "New Set methods proposal for JavaScript (build setup only)",
-  "license": "Fair",
+  "description": "New collection methods proposal for JavaScript",
+  "license": "MIT",
   "scripts": {
-    "spec": "ecmarkup spec/index.html docs/index.html --js docs/ecmarkup.js --css docs/ecmarkup.css",
-    "watch": "ecmarkup --watch spec/index.html out/index.html --js out/ecmarkup.js --css out/ecmarkup.css",
+    "spec": "ecmarkup --assets=external spec/index.html docs/index.html",
+    "watch": "npx ecmarkup --watch --assets=external spec/index.html docs/index.html",
     "test": "mocha -r ./set-polyfill.js -r ./map-polyfill.js test/*/*.spec.js"
   },
+  "type": "module",
   "version": "1.0.0",
   "repository": {
     "type": "git",
@@ -16,14 +17,14 @@
   "keywords": [],
   "author": "Michał Wadas <michalwadas@gmail.com>",
   "bugs": {
-    "url": "https://github.com/Ginden/set-methods/issues"
+    "url": "https://github.com/tc39/proposal-collection-methods/issues"
   },
-  "homepage": "https://github.com/Ginden/set-methods#readme",
+  "homepage": "https://github.com/tc39/proposal-collection-methods#readme",
   "dependencies": {
-    "chai": "^4.2.0",
-    "mocha": "^5.2.0"
+    "chai": "^5.1.1",
+    "mocha": "^10.7.0"
   },
   "devDependencies": {
-    "ecmarkup": "^9.6.3"
+    "ecmarkup": "^19.0.0"
   }
 }

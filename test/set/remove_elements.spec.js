@@ -1,6 +1,4 @@
-'use strict';
-
-const {assert} = require('chai');
+import {assert} from 'chai';
 
 describe('Set.prototype.deleteAll', () => {
     it('Should be present', () => {
