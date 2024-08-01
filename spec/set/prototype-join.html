@@ -8,14 +8,17 @@
   1. If _separator_ is *undefined*, let _sep_ be the single-element String `","`.
   1. Else, let _sep_ be ? ToString(_separator_).
   1. Let _R_ be the empty String.
-  1. Let _entries_ be the List that is _set_.[[SetData]]
   1. Let _k_ be *false*.
-  1. For each _element_ that is an element of _entries_, in original insertion order, do:
-    1. If _element_ is not `empty`, then
+  1. Let _entries_ be _O_.[[SetData]]
+  1. Let _thisSize_ be the number of elements in _O_.[[SetData]].
+  1. Let _index_ be 0.
+  1. Repeat, while _index_ &lt; _thisSize_,
+    1. Let _e_ be _O_.[[SetData]][_index_].
+    1. Set _index_ to _index_ + 1.
+    1. If _e_ is not ~empty~, then
       1. If _k_ is *true*, let _R_ be the string-concatenation of _R_ and _sep_.
       1. Set _k_ to *true*.
-      1. Let _next_ be ? ToString(_element_).
+      1. Let _next_ be ? ToString(_e_).
       1. Set _R_ to the string-concatenation of _R_ and _next_.
-      1. Increase _k_ by 1.
   1. Return _R_.
 </emu-alg>

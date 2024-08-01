@@ -3,7 +3,7 @@
 
 <emu-alg>
   1. Let _O_ be the *this* value.
-  1. Perform ? RequireInternalSlot(_thisArg_, [[SetData]]).
+  1. Perform ? RequireInternalSlot(_O_, [[SetData]]).
   1. If IsCallable(_predicate_) is *false*, throw a *TypeError* exception.
   1. Let _entries_ be _O_.[[SetData]]
   1. Let _thisSize_ be the number of elements in _O_.[[SetData]].
