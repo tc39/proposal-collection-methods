@@ -55,7 +55,7 @@ New methods are added to `Set.prototype`.
   * `Set.prototype.some(predicate, thisArg)`
   * `Set.prototype.every(predicate, thisArg)`
 * New methods:
-  * `Set.prototype.addAll(...elements)` - similar to `Array.prototype.push`. Adds all of arguments to existing `Set`.
+  * `Set.prototype.addAll(...elements)` - similar to `Array.prototype.push`. Adds all arguments to existing `Set`.
     * Alternative name: `.addEach`
   * `Set.prototype.deleteAll(...elements)` - reverse of `addAll`. Remove every `element` in `elements` from existing `Set`.
     * Alternative names: `.deleteEach`
@@ -80,9 +80,8 @@ New methods are added to `Map.prototype`.
   * `Map.prototype.merge(...iterables)` - performs in-place update joining arbitrary number of iterables.
   * `Map.prototype.update(key, cb [,thunk])` - performs in-place update of single value. 
   
-New methods are added to `%Map%`.
+New method is added to `%Map%`:
 
-* `Map.groupBy(iterable, keyDerivative)` -
 * `Map.keyBy(iterable, keyDerivative)` - 
 
 New methods are added to `WeakSet.prototype`.
@@ -91,10 +90,9 @@ New methods are added to `WeakSet.prototype`.
   * `WeakSet.prototype.addAll(...elements)` - similar to `Set.prototype.addAll`.
   * `WeakSet.prototype.deleteAll(...elements)` - similar to `Set.prototype.deleteAll`.
 
-New methods are added to `WeakMap.prototype`.
+New method is added to `WeakMap.prototype`:
 
-* New methods:
-  * `WeakMap.prototype.deleteAll(...elements)` - similar to `Map.prototype.deleteAll`.
+* `WeakMap.prototype.deleteAll(...elements)` - similar to `Map.prototype.deleteAll`.
 
 ## Polyfill
 
@@ -119,17 +117,13 @@ const mySet = new Set(['Just', 'like', 'an', 'array']);
 mySet.join(' '); // Just like an array
 ```
 
-
 ## Not included in this proposal but worth considering
 
 * `Set.prototype.flatMap`, `Set.prototype.flat` - should be added if [`Array.prototype.flatMap`](https://github.com/tc39/proposal-flatMap) is added to language
 
 # Why not `%IteratorPrototype%` methods
 
-* Explicit usage of iterators is verbose
-  * Compare `new Set(set.entries().filter(fn))` to `set.filter(fn)`. 19 characters of boilerplate.
-    * Even small codebase can have hundreds occurrences of this pattern - and hundreds places to make a mistake.
-* User code have no easy way to inherit from `%IteratorPrototype%`
+See [stage 3 Iterator Helpers](https://github.com/tc39/proposal-iterator-helpers) proposal.
 
 # Rationales
 
