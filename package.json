@@ -6,7 +6,8 @@
   "scripts": {
     "spec": "ecmarkup --assets=external spec/index.html docs/index.html",
     "watch": "npx ecmarkup --watch --assets=external spec/index.html docs/index.html",
-    "test": "mocha -r ./set-polyfill.js -r ./map-polyfill.js test/*/*.spec.js"
+    "test": "mocha -r ./set-polyfill.js -r ./map-polyfill.js test/*/*.spec.js",
+    "format": "emu-format --write spec/**/*.html"
   },
   "type": "module",
   "version": "1.0.0",

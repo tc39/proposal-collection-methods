@@ -1,21 +1,21 @@
+<!DOCTYPE html>
 <p>When the `keyBy` method is called, the following steps are taken:</p>
 
-
 <emu-alg>
-    1. Let _C_ be the *this* value.
-    2. If IsConstructor(_C_) is *true*
-        1. Let _map_ be ? Construct(_C_)
-    7. Else,
-        1. Throw a *TypeError*.
-    4. If _map_ does not have a ~[[MapData]]~ internal slot, throw a *TypeError* exception.
-    5. If IsCallable(_callbackfn_) is false, throw a *TypeError* exception.
-    6. Let _set_ be ? Get(_map_, "set")
-    7. Let _iteratorRecord_ be ? GetIterator(_iterable_).
-    8. Repeat,
-        1. Let _next_ be ? IteratorStep(_iteratorRecord_).
-        2. If _next_ is *false*, return _map_.
-        3. Let _item_ be ? IteratorValue(_next_).
-        4. Let _key_ be Call(_callbackfn_, *null*, « _item_ »)
-        4. Let _status_ be Call(_set_, _map_, « _key_.[[Value]], _value_.[[Value]] »).
-        5. If _status_ is an abrupt completion, return ? IteratorClose(_iteratorRecord_, _status_).
+  1. Let _C_ be the *this* value.
+  1. If IsConstructor(_C_) is *true*
+    1. Let _map_ be ? Construct(_C_)
+  1. Else,
+    1. Throw a *TypeError*.
+  1. If _map_ does not have a ~[[MapData]]~ internal slot, throw a *TypeError* exception.
+  1. If IsCallable(_callbackfn_) is false, throw a *TypeError* exception.
+  1. Let _set_ be ? Get(_map_, "set")
+  1. Let _iteratorRecord_ be ? GetIterator(_iterable_).
+  1. Repeat,
+    1. Let _next_ be ? IteratorStep(_iteratorRecord_).
+    1. If _next_ is *false*, return _map_.
+    1. Let _item_ be ? IteratorValue(_next_).
+    1. Let _key_ be Call(_callbackfn_, *null*, « _item_ »)
+    1. Let _status_ be Call(_set_, _map_, « _key_.[[Value]], _value_.[[Value]] »).
+    1. If _status_ is an abrupt completion, return ? IteratorClose(_iteratorRecord_, _status_).
 </emu-alg>

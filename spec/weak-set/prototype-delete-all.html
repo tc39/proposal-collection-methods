@@ -1,18 +1,19 @@
+<!DOCTYPE html>
 <p>When the `deleteAll` method is called, the following steps are taken:</p>
 
 <emu-alg>
-    1. Let _len_ be the actual number of arguments passed to this function.
-    2. Let _items_ be the List of arguments passed to this function.
-    3. Let _weakset_ be the *this* value.
-        1. If Type(_weakset_) is not Object, throw a *TypeError* exception.
-    4. Let _k_ be 0.
-    5. Let _remover_ be ? Get(_weakset_, "delete")
-    6. If IsCallable(_remover_) is *false*, throw a *TypeError* exception.
-    7. Repeat while _k_ < _len_
-        1. Let _value_ be _items_[_k_].
-        2. Call(_remover_, _weakset_, _value_)
-        3. Increase _k_ by 1.
-    8. Return _weakset_.
+  1. Let _len_ be the actual number of arguments passed to this function.
+  1. Let _items_ be the List of arguments passed to this function.
+  1. Let _weakset_ be the *this* value.
+    1. If Type(_weakset_) is not Object, throw a *TypeError* exception.
+  1. Let _k_ be 0.
+  1. Let _remover_ be ? Get(_weakset_, "delete")
+  1. If IsCallable(_remover_) is *false*, throw a *TypeError* exception.
+  1. Repeat while _k_ < _len_
+    1. Let _value_ be _items_[_k_].
+    1. Call(_remover_, _weakset_, _value_)
+    1. Increase _k_ by 1.
+  1. Return _weakset_.
 
 </emu-alg>
 

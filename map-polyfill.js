@@ -125,7 +125,6 @@ const prototypeMethods = {
     mapKeys,
     filter,
     merge,
-
 };
 const staticMethods = {
     groupBy,

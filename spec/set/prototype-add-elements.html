@@ -1,14 +1,15 @@
+<!DOCTYPE html>
 <p>When the `addAll` method is called, the following steps are taken:</p>
 
 <emu-alg>
-    1. Let _len_ be the actual number of arguments passed to this function.
-    2. Let _items_ be the List of arguments passed to this function.
-    3. Let _set_ be the *this* value.
-        1. If Type(_set_) is not Object, throw a *TypeError* exception.
-        2. If _set_ does not have a ~[[SetData]]~ internal slot, throw a *TypeError* exception.
-    4. Let _elements_ be CreateArrayFromList(items).
-    5. Let _adder_ be ? Get(_set_, "add")
-    6. Return ? AddEntriesFromIterable(_set_, _elements_, _adder_).
+  1. Let _len_ be the actual number of arguments passed to this function.
+  1. Let _items_ be the List of arguments passed to this function.
+  1. Let _set_ be the *this* value.
+    1. If Type(_set_) is not Object, throw a *TypeError* exception.
+    1. If _set_ does not have a ~[[SetData]]~ internal slot, throw a *TypeError* exception.
+  1. Let _elements_ be CreateArrayFromList(items).
+  1. Let _adder_ be ? Get(_set_, "add")
+  1. Return ? AddEntriesFromIterable(_set_, _elements_, _adder_).
 
 </emu-alg>
 

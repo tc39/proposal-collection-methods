@@ -1,22 +1,23 @@
+<!DOCTYPE html>
 <p>When the `reduce` method is called, the following steps are taken:</p>
 
 <emu-alg>
-    1. Let _set_ be the *this* value.
-        1. If Type(_set_) is not Object, throw a *TypeError* exception.
-        2. If _set_ does not have a [[SetData]] internal slot, throw a *TypeError* exception.
-    2. If IsCallable(_callbackfn_) is false, throw a *TypeError* exception.
-    3. Let _entries_ be the List that is _set_.[[SetData]].
-    4. Let _accumulator_ be *undefined*
-    5. Let _first_ be *true*.
-    6. If _initialValue_ is present, then
-        1. Set _accumulator_ to _initialValue_
-    7. For each _e_ that is an element of _entries_, in original insertion order, do:
-        1. If _e_ is not `empty`, then
-            1. If _first_ be *true* and _initialValue_ is not present:
-                1. Set _accumulator_ to _e_
-            2. Else,
-                1. Set _accumulator_ to ? Call(_callbackfn_, undefined, « _accumulator_, _e_, _e_, _map_ »)
-            3. Set _first_ to  *false*
-    8. If _first_ is *true* and _initialValue_ is not present, throw *TypeError* exception.
-    9. Return _accumulator_.
+  1. Let _set_ be the *this* value.
+    1. If Type(_set_) is not Object, throw a *TypeError* exception.
+    1. If _set_ does not have a [[SetData]] internal slot, throw a *TypeError* exception.
+  1. If IsCallable(_callbackfn_) is false, throw a *TypeError* exception.
+  1. Let _entries_ be the List that is _set_.[[SetData]].
+  1. Let _accumulator_ be *undefined*
+  1. Let _first_ be *true*.
+  1. If _initialValue_ is present, then
+    1. Set _accumulator_ to _initialValue_
+  1. For each _e_ that is an element of _entries_, in original insertion order, do:
+    1. If _e_ is not `empty`, then
+      1. If _first_ be *true* and _initialValue_ is not present:
+        1. Set _accumulator_ to _e_
+      1. Else,
+        1. Set _accumulator_ to ? Call(_callbackfn_, undefined, « _accumulator_, _e_, _e_, _map_ »)
+      1. Set _first_ to *false*
+  1. If _first_ is *true* and _initialValue_ is not present, throw *TypeError* exception.
+  1. Return _accumulator_.
 </emu-alg>
