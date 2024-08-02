@@ -1,19 +1,13 @@
 <!DOCTYPE html>
-<emu-note type="editor">
-  This code serves as placeholder until formal spec is written for this method.
-</emu-note>
-
-<pre><code class="javascript">
-function mapValues(callbackFn, thisArg) {
-    assert(isObject(this), 'this is not an object');
-    assert(isCallable(callbackFn), 'callback is not a function');
-    const Ctor = SpeciesConstructor(this, Map);
-    const retObj = new Ctor();
-    const _set = retObj.set;
-    for(const [key, value] of this) {
-        const newValue = Reflect.apply(callbackFn, thisArg, [value, key, this])
-        Reflect.apply(_set, retObj, [key, newValue]);
-    }
-    return retObj;
-}
-</code></pre>
+<emu-alg>
+  1. Let _M_ be the *this* value.
+  1. Perform ? RequireInternalSlot(_M_, [[MapData]]).
+  1. If IsCallable(_callbackfn_) is *false*, throw a *TypeError* exception.
+  1. Let _result_ be ! Construct(%Map%).
+  1. For each Record { [[Key]], [[Value]] } _e_ of _M_.[[MapData]], do
+    1. If _e_.[[Key]] is not ~empty~, then
+    1. Let _newValue_ be ? Call(_callbackfn_, _T_, « _e_.[[Value]], _e_.[[Key]], _map_ »)
+    1. Let _p_ be the Record { [[Key]]: _e_.[[Key]], [[Value]]: _newValue_ }
+    1. Append _p_ to _result_.[[MapData]]
+  1. Return _result_.
+</emu-alg>
